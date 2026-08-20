@@ -11,6 +11,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
+    <!-- Firebase Cloud Libraries -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
     <style>
         /* =========================================
            1. CORE VARIABLES & THEMES
@@ -209,6 +213,16 @@
         body.dark-mode .scan-btn { background-color: #1e293b; border: 1px solid #475569; }
         body.dark-mode .back-btn { background: #1e293b; color: #e2e8f0; border: 1px solid #334155; }
         
+        /* Custom Download Button Styling */
+        .btn-download {
+            background-color: var(--visitor-color); margin-bottom: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        /* Softer, eye-friendly neon for Dark Mode */
+        body.dark-mode .btn-download {
+            background-color: rgba(0, 240, 255, 0.15); color: #00f0ff; 
+            border: 1px solid rgba(0, 240, 255, 0.4); box-shadow: 0 0 15px rgba(0, 240, 255, 0.15); 
+        }
+
         .auth-toggle { text-align: center; margin-top: 20px; font-size: 0.95rem; color: var(--text-muted); }
         .auth-toggle span { font-weight: bold; cursor: pointer; text-decoration: underline; padding: 5px; }
         .toggle-visitor { color: var(--visitor-color); }
@@ -243,7 +257,7 @@
         body.dark-mode .scanned-by-text { color: #00f0ff; }
 
         /* =========================================
-           9. FULL SCREEN WELCOME OVERLAY (SINGLE TAP)
+           9. FULL SCREEN WELCOME OVERLAY
            ========================================= */
         #welcomeOverlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -258,20 +272,15 @@
         
         .welcome-title {
             font-size: clamp(2.5rem, 10vw, 4.5rem); font-weight: 900; margin-bottom: 10px;
-            color: #4c1d95; /* Deep Violet for Light Mode */
-            font-family: 'Georgia', serif; letter-spacing: 2px;
+            color: #4c1d95; font-family: 'Georgia', serif; letter-spacing: 2px;
         }
-        .welcome-subtitle {
-            font-size: clamp(1.2rem, 5vw, 1.8rem); color: var(--text-muted); font-style: italic; margin-bottom: 30px;
-        }
+        .welcome-subtitle { font-size: clamp(1.2rem, 5vw, 1.8rem); color: var(--text-muted); font-style: italic; margin-bottom: 30px; }
         .tap-continue { font-size: 0.9rem; color: var(--text-muted); opacity: 0.7; animation: pulse 2s infinite; }
         @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
 
-        /* Dark Mode Violet Neon */
         body.dark-mode #welcomeOverlay { background: rgba(5, 8, 20, 0.95); backdrop-filter: blur(10px); }
         body.dark-mode .welcome-title {
-            color: #ffffff;
-            text-shadow: 0 0 10px #7c3aed, 0 0 20px #7c3aed, 0 0 40px #d900ff, 0 0 80px #d900ff;
+            color: #ffffff; text-shadow: 0 0 10px #7c3aed, 0 0 20px #7c3aed, 0 0 40px #d900ff, 0 0 80px #d900ff;
         }
         body.dark-mode .welcome-subtitle { color: #e9d5ff; text-shadow: 0 0 8px #7c3aed; }
 
@@ -302,15 +311,13 @@
 
         .copyright { font-size: 0.85rem; }
         
-        /* Visitor Counter Styling */
         .visitor-counter-box {
             margin-top: 15px; padding: 10px; border-radius: 8px; font-weight: bold;
             background: rgba(124, 58, 237, 0.1); border: 1px solid var(--admin-color);
             color: var(--admin-color); display: inline-block;
         }
         body.dark-mode .visitor-counter-box {
-            color: #d900ff; text-shadow: 0 0 5px rgba(217,0,255,0.5);
-            box-shadow: 0 0 10px rgba(217,0,255,0.2);
+            color: #d900ff; text-shadow: 0 0 5px rgba(217,0,255,0.5); box-shadow: 0 0 10px rgba(217,0,255,0.2);
         }
     </style>
 </head>
@@ -325,9 +332,8 @@
     </div>
 </div>
 
-<!-- SECRET ADMIN ICON (Double Tap) -->
+<!-- SECRET ADMIN ICON -->
 <button class="icon-btn admin-toggle" onclick="handleAdminIconClick()" title="Info">🛡️</button>
-<!-- THEME ICON -->
 <button id="themeToggle" class="icon-btn theme-toggle" onclick="toggleTheme()" title="Toggle Day/Night Mode">🌙</button>
 
 <div class="container">
@@ -455,10 +461,8 @@
                 
                 <div class="scanner-box">
                     <h3 style="margin-top:0; font-size: 1.2rem;">📱 Live Door Scanner</h3>
-                    
                     <div id="staff-reader" class="camera-view"></div>
                     <button class="scan-btn" onclick="startCamera('staff-reader', 'staffScanResult')" style="background-color: var(--success); border: none; color: white;">Start Camera Scanner</button>
-                    
                     <div style="margin-top: 15px; display: flex; gap: 10px;">
                         <input type="text" id="staffScannerInput" placeholder="Simulate (Enter ID)" style="background: white; color: black; border:none; margin: 0; flex: 2;">
                         <button class="scan-btn" onclick="processScan(document.getElementById('staffScannerInput').value, 'staffScanResult')" style="margin: 0; flex: 1;">Enter</button>
@@ -501,7 +505,7 @@
             <div id="adminDashboard" class="hidden">
                 <h3 style="margin-top:0;">Master Dashboard</h3>
                 
-                <button class="btn-admin" onclick="downloadPDF()" style="margin-bottom: 25px; background-color: var(--visitor-color); box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
+                <button class="btn-download" onclick="downloadPDF()">
                     📄 Download Event Report (PDF)
                 </button>
                 
@@ -532,10 +536,8 @@
                 
                 <div class="scanner-box">
                     <h3 style="margin-top:0; font-size: 1.2rem;">📱 Master Override Scanner</h3>
-                    
                     <div id="master-reader" class="camera-view"></div>
                     <button class="scan-btn" onclick="startCamera('master-reader', 'adminScanResult')" style="background-color: var(--success); border: none; color: white;">Start Camera Scanner</button>
-                    
                     <div style="margin-top: 15px; display: flex; gap: 10px;">
                         <input type="text" id="adminScannerInput" placeholder="Simulate (Enter ID)" style="background: white; color: black; border:none; margin: 0; flex: 2;">
                         <button class="scan-btn" onclick="processScan(document.getElementById('adminScannerInput').value, 'adminScanResult')" style="margin: 0; flex: 1;">Enter</button>
@@ -556,7 +558,6 @@
         -Founded by Biswajit Saha
     </div>
     
-    <!-- SECURE LIVE VISITOR COUNTER (Only visible to logged-in Admins) -->
     <div id="footerVisitorCount" class="hidden">
         <div class="visitor-counter-box">
             📈 Registered Students: <span id="totalVisitorCount">0</span>
@@ -566,42 +567,83 @@
     <div class="copyright" style="margin-top: 15px;">© Copyright by IIA ,2026</div>
 </footer>
 
+<!-- === MAIN APPLICATION SCRIPT === -->
 <script>
-    // --- ICON CLICK LISTENER (Single = Welcome, Double = Master Admin) ---
+    // ==========================================
+    // 1. FIREBASE CLOUD DATABASE CONFIGURATION
+    // ==========================================
+    const firebaseConfig = {
+        apiKey: "AIzaSyAvtM_LmkN4oXLQ7_wojG8CunUuw6lbt7Y",
+        authDomain: "iia-fest.firebaseapp.com",
+        databaseURL: "https://iia-fest-default-rtdb.firebaseio.com",
+        projectId: "iia-fest",
+        storageBucket: "iia-fest.firebasestorage.app",
+        messagingSenderId: "111712260847",
+        appId: "1:111712260847:web:667572c9309a011b02811a",
+        measurementId: "G-M1SHTJ5LF1"
+    };
+    
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // ==========================================
+    // 2. GLOBAL STATE (Synced with Cloud)
+    // ==========================================
+    let visitors = []; 
+    let staffMembers = []; 
+    let tickets = [];  
+    
+    let currentVisitor = null; 
+    let currentStaff = null;
+    let isAdminLoggedIn = false;
+
+    // REAL-TIME CLOUD LISTENER
+    db.ref('iia_fest_data').on('value', (snapshot) => {
+        const data = snapshot.val();
+        if(data) {
+            visitors = data.visitors || [];
+            staffMembers = data.staffMembers || [];
+            tickets = data.tickets || [];
+            refreshDashboards(); // Update the UI automatically when cloud changes
+        }
+    });
+
+    // MASTER SAVE FUNCTION
+    function syncToCloud() {
+        db.ref('iia_fest_data').set({
+            visitors: visitors,
+            staffMembers: staffMembers,
+            tickets: tickets
+        });
+    }
+
+    // ==========================================
+    // 3. UI & AUTHENTICATION LOGIC
+    // ==========================================
     let adminIconTimer = null;
     function handleAdminIconClick() {
         if (adminIconTimer === null) {
-            // First click: wait 300ms to see if a second click happens
             adminIconTimer = setTimeout(() => {
                 adminIconTimer = null;
-                // Single Tap Action -> Show Welcome Overlay
                 document.getElementById('welcomeOverlay').classList.remove('hidden');
-                setTimeout(() => {
-                    document.getElementById('welcomeOverlay').classList.add('active');
-                }, 10);
+                setTimeout(() => { document.getElementById('welcomeOverlay').classList.add('active'); }, 10);
             }, 300);
         } else {
-            // Second click detected before timer finished!
             clearTimeout(adminIconTimer);
             adminIconTimer = null;
-            // Double Tap Action -> Open Master Admin
             switchView('view-admin');
         }
     }
 
     function hideWelcomeScreen() {
         document.getElementById('welcomeOverlay').classList.remove('active');
-        setTimeout(() => {
-            document.getElementById('welcomeOverlay').classList.add('hidden');
-        }, 400); // Wait for transition to finish
+        setTimeout(() => { document.getElementById('welcomeOverlay').classList.add('hidden'); }, 400); 
     }
 
-    // --- VISITOR COUNTER LOGIC ---
     function updateFooterCounter() {
         const counterDiv = document.getElementById('footerVisitorCount');
         const countSpan = document.getElementById('totalVisitorCount');
-        
-        // Show counter ONLY if Master Admin is logged in, or a verified Staff is logged in
         if (isAdminLoggedIn || (currentStaff && currentStaff.status === 'Approved')) {
             countSpan.innerText = visitors.length;
             counterDiv.classList.remove('hidden');
@@ -610,98 +652,19 @@
         }
     }
 
-    // --- REAL EMAIL VALIDATOR ---
     function isValidEmailDomain(email) {
         const allowedDomains = ['gmail.com', 'hotmail.com', 'yahoo.com', 'outlook.com', 'icloud.com', 'aol.com'];
         const domain = email.split('@')[1];
         return allowedDomains.includes(domain);
     }
 
-    // --- ABOUT TAB TOGGLE ---
     function toggleAbout() {
         const content = document.getElementById('aboutContent');
         const tab = document.querySelector('.about-tab');
         if(content.classList.contains('hidden')) {
-            content.classList.remove('hidden');
-            tab.innerText = "About 🔼";
+            content.classList.remove('hidden'); tab.innerText = "About 🔼";
         } else {
-            content.classList.add('hidden');
-            tab.innerText = "About 🔽";
-        }
-    }
-
-    // --- PDF EXPORT FEATURE ---
-    function downloadPDF() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        
-        doc.setFontSize(18);
-        doc.text("TEACHERS DAY 2K26 - Master Event Report", 14, 20);
-        doc.setFontSize(12);
-        
-        doc.text("1. Present in Venue (Scanned & Verified)", 14, 30);
-        const presentData = tickets.filter(t => t.status === 'Used').map(t => [t.name, t.email, t.id, t.scannedBy || 'Master']);
-        doc.autoTable({ startY: 35, head: [['Student Name', 'Email', 'Pass ID', 'Verified By']], body: presentData });
-        let finalY = doc.lastAutoTable.finalY || 35;
-        
-        doc.text("2. Active / Approved Passes (Not Scanned Yet)", 14, finalY + 15);
-        const activeData = tickets.filter(t => t.status === 'Approved').map(t => [t.name, t.email, t.id]);
-        doc.autoTable({ startY: finalY + 20, head: [['Student Name', 'Email', 'Pass ID']], body: activeData });
-        finalY = doc.lastAutoTable.finalY || finalY + 20;
-
-        doc.text("3. Authorized Admins", 14, finalY + 15);
-        const adminData = staffMembers.filter(s => s.status === 'Approved').map(s => [s.name, s.email]);
-        doc.autoTable({ startY: finalY + 20, head: [['Admin Name', 'Email']], body: adminData });
-        
-        doc.save("TEACHERS_DAY_2K26_Event_Report.pdf");
-    }
-
-    // --- LIVE CAMERA SCANNER LOGIC ---
-    let html5QrCode;
-    function startCamera(readerElementId, resultElementId) {
-        if(html5QrCode) {
-            html5QrCode.stop().then(() => { html5QrCode.clear(); }).catch(err => console.log(err));
-        }
-        document.getElementById(resultElementId).classList.add('hidden');
-        html5QrCode = new Html5Qrcode(readerElementId);
-        
-        html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } }, 
-        (decodedText) => {
-            html5QrCode.stop();
-            document.getElementById(readerElementId).innerHTML = '<div style="color:#10b981; padding:40px 0; font-size:1.5rem; font-weight:bold; text-align:center;">✅ QR Detected! Processing...</div>';
-            processScan(decodedText, resultElementId);
-        }, 
-        (errorMessage) => {}).catch(err => {
-            document.getElementById(resultElementId).innerText = "Camera access denied. Ensure you are on a secure (HTTPS) connection or use manual entry.";
-            document.getElementById(resultElementId).classList.remove('hidden');
-            document.getElementById(resultElementId).classList.add('msg-error');
-        });
-    }
-
-    function processScan(decodedText, resultId) {
-        const id = decodedText.trim();
-        const res = document.getElementById(resultId);
-        res.classList.remove('hidden', 'msg-success', 'msg-error');
-        
-        if(!id) {
-            res.innerText = "❌ Please enter a valid Pass ID"; res.classList.add('msg-error'); return;
-        }
-
-        let t = tickets.find(t => t.id === id);
-
-        if(!t || t.status === 'Pending' || t.status === 'Revoked') {
-            res.innerText = "❌ Pass Not Found or Unauthorized"; res.classList.add('msg-error');
-        } else if (t.status === 'Used') {
-            res.innerText = `⚠️ Alert: Pass Already Used! (${t.name})`; res.classList.add('msg-error');
-        } else if (t.status === 'Approved') {
-            t.status = 'Used'; 
-            
-            if (isAdminLoggedIn) { t.scannedBy = 'Master Admin'; } 
-            else if (currentStaff) { t.scannedBy = currentStaff.name; } 
-            else { t.scannedBy = 'System'; }
-
-            res.innerHTML = `✅ VERIFIED<br><small>Entry granted for: ${t.name}</small>`; res.classList.add('msg-success');
-            refreshDashboards();
+            content.classList.add('hidden'); tab.innerText = "About 🔽";
         }
     }
 
@@ -721,11 +684,7 @@
     function switchView(viewId) {
         document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
         document.getElementById(viewId).classList.add('active');
-        
-        if(html5QrCode && html5QrCode.isScanning) {
-            html5QrCode.stop().then(() => { html5QrCode.clear(); }).catch(e => {});
-        }
-        
+        if(html5QrCode && html5QrCode.isScanning) { html5QrCode.stop().then(() => { html5QrCode.clear(); }).catch(e => {}); }
         refreshDashboards();
     }
 
@@ -736,20 +695,11 @@
         updateFooterCounter();
     }
 
-    let visitors = []; 
-    let staffMembers = []; 
-    let tickets = [];  
-    
-    let currentVisitor = null; 
-    let currentStaff = null;
-    let isAdminLoggedIn = false;
-
     function toggleAuth(role, type) {
         document.getElementById(`vLoginError`).classList.add('hidden');
         document.getElementById(`vSignupError`).classList.add('hidden');
         document.getElementById(`sLoginError`).classList.add('hidden');
         document.getElementById(`sSignupError`).classList.add('hidden');
-        
         if (type === 'signup') {
             document.getElementById(`form${role.charAt(0).toUpperCase() + role.slice(1)}Login`).classList.add('hidden');
             document.getElementById(`form${role.charAt(0).toUpperCase() + role.slice(1)}Signup`).classList.remove('hidden');
@@ -803,9 +753,8 @@
 
         currentVisitor = { name: n, email: eMail, pass: p };
         visitors.push(currentVisitor);
+        syncToCloud(); 
         e.target.reset();
-        
-        updateFooterCounter(); // Update global counter silently
         showVisitorDashboard();
     });
 
@@ -853,7 +802,7 @@
 
     function requestTicket() {
         tickets.push({ id: 'TD26-' + Math.floor(Math.random() * 90000 + 10000), email: currentVisitor.email, name: currentVisitor.name, status: 'Pending' });
-        updateVisitorUI();
+        syncToCloud(); 
     }
 
     // --- ADMIN AUTHENTICATION ---
@@ -876,6 +825,8 @@
         
         const newAdmin = { name: n, email: eMail, pass: p, status: 'Pending' };
         staffMembers.push(newAdmin);
+        syncToCloud(); 
+        
         e.target.reset();
         alert('Registration submitted! Please wait for Master Admin approval to log in.');
         toggleAuth('staff', 'login');
@@ -890,7 +841,7 @@
         if (u && u.status === 'Approved') { 
             currentStaff = u; e.target.reset(); 
             showStaffDashboard(); 
-            updateFooterCounter(); // Show counter on login
+            updateFooterCounter(); 
         } else { 
             document.getElementById('sLoginError').classList.remove('hidden'); 
         }
@@ -929,9 +880,8 @@
             document.getElementById('aLoginPin').value = '';
             document.getElementById('aPinError').classList.add('hidden');
             document.getElementById('adminDashboard').classList.remove('hidden');
-            
             updateAdminUI();
-            updateFooterCounter(); // Show counter on login
+            updateFooterCounter();
         } else {
             document.getElementById('aPinError').classList.remove('hidden');
         }
@@ -990,7 +940,7 @@
         const admin = staffMembers.find(s => s.email === email);
         if(admin) {
             admin.status = 'Approved';
-            updateAdminUI();
+            syncToCloud(); 
         }
     }
 
@@ -1016,7 +966,82 @@
         const t = tickets.find(t => t.id === id);
         if(t) { 
             t.status = action; 
-            refreshDashboards(); 
+            syncToCloud(); 
+        }
+    }
+
+    // --- PDF EXPORT FEATURE ---
+    function downloadPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        
+        doc.setFontSize(18);
+        doc.text("TEACHERS DAY 2K26 - Master Event Report", 14, 20);
+        doc.setFontSize(12);
+        
+        doc.text("1. Present in Venue (Scanned & Verified)", 14, 30);
+        const presentData = tickets.filter(t => t.status === 'Used').map(t => [t.name, t.email, t.id, t.scannedBy || 'Master']);
+        doc.autoTable({ startY: 35, head: [['Student Name', 'Email', 'Pass ID', 'Verified By']], body: presentData });
+        
+        let finalY = doc.lastAutoTable.finalY || 35;
+        
+        doc.text("2. Active / Approved Passes (Not Scanned Yet)", 14, finalY + 15);
+        const activeData = tickets.filter(t => t.status === 'Approved').map(t => [t.name, t.email, t.id]);
+        doc.autoTable({ startY: finalY + 20, head: [['Student Name', 'Email', 'Pass ID']], body: activeData });
+        
+        finalY = doc.lastAutoTable.finalY || finalY + 20;
+
+        doc.text("3. Authorized Admins", 14, finalY + 15);
+        const adminData = staffMembers.filter(s => s.status === 'Approved').map(s => [s.name, s.email]);
+        doc.autoTable({ startY: finalY + 20, head: [['Admin Name', 'Email']], body: adminData });
+        
+        doc.save("TEACHERS_DAY_2K26_Event_Report.pdf");
+    }
+
+    // --- LIVE CAMERA SCANNER LOGIC ---
+    let html5QrCode;
+    function startCamera(readerElementId, resultElementId) {
+        if(html5QrCode) {
+            html5QrCode.stop().then(() => { html5QrCode.clear(); }).catch(err => console.log(err));
+        }
+        document.getElementById(resultElementId).classList.add('hidden');
+        html5QrCode = new Html5Qrcode(readerElementId);
+        
+        html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } }, 
+        (decodedText) => {
+            html5QrCode.stop();
+            document.getElementById(readerElementId).innerHTML = '<div style="color:#10b981; padding:40px 0; font-size:1.5rem; font-weight:bold; text-align:center;">✅ QR Detected! Processing...</div>';
+            processScan(decodedText, resultElementId);
+        }, 
+        (errorMessage) => {}).catch(err => {
+            document.getElementById(resultElementId).innerText = "Camera access denied. Ensure you are on a secure (HTTPS) connection or use manual entry.";
+            document.getElementById(resultElementId).classList.remove('hidden');
+            document.getElementById(resultElementId).classList.add('msg-error');
+        });
+    }
+
+    function processScan(decodedText, resultId) {
+        const id = decodedText.trim();
+        const res = document.getElementById(resultId);
+        res.classList.remove('hidden', 'msg-success', 'msg-error');
+        
+        if(!id) { res.innerText = "❌ Please enter a valid Pass ID"; res.classList.add('msg-error'); return; }
+
+        let t = tickets.find(t => t.id === id);
+
+        if(!t || t.status === 'Pending' || t.status === 'Revoked') {
+            res.innerText = "❌ Pass Not Found or Unauthorized"; res.classList.add('msg-error');
+        } else if (t.status === 'Used') {
+            res.innerText = `⚠️ Alert: Pass Already Used! (${t.name})`; res.classList.add('msg-error');
+        } else if (t.status === 'Approved') {
+            t.status = 'Used'; 
+            
+            if (isAdminLoggedIn) { t.scannedBy = 'Master Admin'; } 
+            else if (currentStaff) { t.scannedBy = currentStaff.name; } 
+            else { t.scannedBy = 'System'; }
+
+            res.innerHTML = `✅ VERIFIED<br><small>Entry granted for: ${t.name}</small>`; res.classList.add('msg-success');
+            syncToCloud(); 
         }
     }
 </script>
