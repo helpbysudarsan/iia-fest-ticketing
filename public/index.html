@@ -3,226 +3,334 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>IIA Fest Ticketing</title>
+    <title>TEACHERS DAY 2K26 Ticketing</title>
+    
+    <!-- External Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
     <style>
-        /* Light Theme Variables */
+        /* =========================================
+           1. CORE VARIABLES & THEMES
+           ========================================= */
         :root {
-            --bg-color: #f3f4f6;
+            --bg-color: #f8fafc;
             --card-bg: rgba(255, 255, 255, 0.95);
-            --text-main: #1f2937;
-            --text-muted: #6b7280;
-            --visitor-color: #0ea5e9; /* Blue */
-            --staff-color: #10b981;   /* Green */
-            --admin-color: #8b5cf6;   /* Purple */
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --visitor-color: #0284c7; /* Sky Blue */
+            --staff-color: #059669;   /* Emerald Green */
+            --admin-color: #7c3aed;   /* Violet */
             --success: #10b981;
             --danger: #ef4444;
-            --border-color: #e5e7eb;
-            --input-bg: #f9fafb;
-            --input-border: #d1d5db;
+            --border-color: #e2e8f0;
+            --input-bg: #ffffff;
+            --input-border: #cbd5e1;
         }
 
-        /* Dark Theme Variables (Neon) */
+        /* SOFT NEON DARK MODE - Optimized for low eye strain */
         body.dark-mode {
-            --bg-color: #0a0f1a; 
-            --card-bg: rgba(17, 24, 39, 0.85);
-            --text-main: #f9fafb;
-            --text-muted: #9ca3af;
-            --border-color: #374151;
-            --input-bg: #1f2937;
-            --input-border: #4b5563;
+            --bg-color: #0f172a; /* Smooth Slate instead of harsh black */
+            --card-bg: rgba(30, 41, 59, 0.85); 
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --visitor-color: #38bdf8; /* Soft Sky Blue */
+            --staff-color: #34d399;   /* Soft Mint Green */
+            --admin-color: #a78bfa;   /* Soft Pastel Violet */
+            --border-color: #334155;
+            --input-bg: #1e293b;
+            --input-border: #475569;
         }
 
+        /* =========================================
+           2. GLOBAL STRUCTURE & MOBILE LAYOUT
+           ========================================= */
+        * { box-sizing: border-box; }
+        
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
             background-color: var(--bg-color); margin: 0; padding: 15px; 
-            display: flex; justify-content: center; align-items: flex-start; padding-top: 10vh;
-            min-height: 100vh; color: var(--text-main); transition: background-color 0.4s, color 0.4s; position: relative;
+            display: flex; flex-direction: column; align-items: center; padding-top: 12vh;
+            min-height: 100vh; color: var(--text-main); transition: background-color 0.4s, color 0.4s; 
+            position: relative; overflow-x: hidden;
         }
 
-        /* === ALPANA BACKGROUNDS === */
+        .container { 
+            width: 100%; max-width: 500px; padding: 10px; position: relative; z-index: 1; flex-grow: 1;
+        }
+
+        .view-section { display: none; animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .view-section.active { display: block; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* =========================================
+           3. BACKGROUND ALPANA
+           ========================================= */
         body::before {
             content: ""; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: -1;
             background-image: url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%239ca3af' stroke-width='1.5' stroke-opacity='0.4'%3E%3Ccircle cx='60' cy='60' r='50'/%3E%3Ccircle cx='60' cy='60' r='40' stroke-dasharray='4 4'/%3E%3Cpath d='M60 10 C 75 35, 85 45, 60 60 C 35 45, 45 35, 60 10 Z' fill='%239ca3af' fill-opacity='0.1'/%3E%3Cpath d='M60 110 C 75 85, 85 75, 60 60 C 35 75, 45 85, 60 110 Z' fill='%239ca3af' fill-opacity='0.1'/%3E%3Cpath d='M10 60 C 35 75, 45 85, 60 60 C 45 35, 35 45, 10 60 Z' fill='%239ca3af' fill-opacity='0.1'/%3E%3Cpath d='M110 60 C 85 75, 75 85, 60 60 C 75 35, 85 45, 110 60 Z' fill='%239ca3af' fill-opacity='0.1'/%3E%3Ccircle cx='60' cy='60' r='12'/%3E%3C/g%3E%3C/svg%3E");
-            background-size: 120px 120px; opacity: 0.6; transition: all 0.4s ease-in-out;
+            background-size: 120px 120px; opacity: 0.5; transition: all 0.4s ease-in-out;
         }
 
+        /* Softer Background Glow */
         body.dark-mode::before {
-            background-image: url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeGaussianBlur stdDeviation='2.5' result='b'/%3E%3CfeMerge%3E%3CfeMergeNode in='b'/%3E%3CfeMergeNode in='SourceGraphic'/%3E%3C/feMerge%3E%3C/filter%3E%3Cg filter='url(%23g)' fill='none' stroke='%2300ffff' stroke-width='1.5' stroke-opacity='0.9'%3E%3Ccircle cx='60' cy='60' r='50'/%3E%3Ccircle cx='60' cy='60' r='40' stroke-dasharray='4 4'/%3E%3Cpath d='M60 10 C 75 35, 85 45, 60 60 C 35 45, 45 35, 60 10 Z' fill='%2300ffff' fill-opacity='0.15'/%3E%3Cpath d='M60 110 C 75 85, 85 75, 60 60 C 35 75, 45 85, 60 110 Z' fill='%2300ffff' fill-opacity='0.15'/%3E%3Cpath d='M10 60 C 35 75, 45 85, 60 60 C 45 35, 35 45, 10 60 Z' fill='%2300ffff' fill-opacity='0.15'/%3E%3Cpath d='M110 60 C 85 75, 75 85, 60 60 C 75 35, 85 45, 110 60 Z' fill='%2300ffff' fill-opacity='0.15'/%3E%3Ccircle cx='60' cy='60' r='12'/%3E%3C/g%3E%3C/svg%3E");
-            opacity: 0.65;
+            background-image: url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeGaussianBlur stdDeviation='2' result='b'/%3E%3CfeMerge%3E%3CfeMergeNode in='b'/%3E%3CfeMergeNode in='SourceGraphic'/%3E%3C/feMerge%3E%3C/filter%3E%3Cg filter='url(%23g)' fill='none' stroke='%2338bdf8' stroke-width='1.5' stroke-opacity='0.5'%3E%3Ccircle cx='60' cy='60' r='50'/%3E%3Ccircle cx='60' cy='60' r='40' stroke-dasharray='4 4'/%3E%3Cpath d='M60 10 C 75 35, 85 45, 60 60 C 35 45, 45 35, 60 10 Z' fill='%2338bdf8' fill-opacity='0.05'/%3E%3Cpath d='M60 110 C 75 85, 85 75, 60 60 C 35 75, 45 85, 60 110 Z' fill='%2338bdf8' fill-opacity='0.05'/%3E%3Cpath d='M10 60 C 35 75, 45 85, 60 60 C 45 35, 35 45, 10 60 Z' fill='%2338bdf8' fill-opacity='0.05'/%3E%3Cpath d='M110 60 C 85 75, 75 85, 60 60 C 75 35, 85 45, 110 60 Z' fill='%2338bdf8' fill-opacity='0.05'/%3E%3Ccircle cx='60' cy='60' r='12'/%3E%3C/g%3E%3C/svg%3E");
+            opacity: 0.25;
         }
-        
-        .container { width: 100%; max-width: 600px; padding: 20px 0; position: relative; z-index: 1;}
-        .view-section { display: none; animation: slideIn 0.3s ease-out; }
-        .view-section.active { display: block; }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* FIXED ICONS IN SCREEN CORNERS */
+        /* =========================================
+           4. TOP NAVIGATION ICONS
+           ========================================= */
         .icon-btn {
-            position: fixed; top: 20px; background: var(--card-bg); border: 1px solid var(--border-color);
-            color: var(--text-main); border-radius: 50%; width: 45px; height: 45px; font-size: 1.2rem; cursor: pointer;
+            position: fixed; top: 15px; background: var(--card-bg); border: 1px solid var(--border-color);
+            color: var(--text-main); border-radius: 50%; width: 42px; height: 42px; font-size: 1.2rem; cursor: pointer;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center;
-            padding: 0; transition: all 0.2s; backdrop-filter: blur(5px); z-index: 100;
+            padding: 0; transition: all 0.3s ease; backdrop-filter: blur(8px); z-index: 100;
         }
-        .icon-btn:hover { transform: scale(1.1); }
-        .admin-toggle { left: 20px; }
-        .theme-toggle { right: 20px; }
+        .icon-btn:active { transform: scale(0.9); }
+        .admin-toggle { left: 15px; }
+        .theme-toggle { right: 15px; }
         
-        body.dark-mode .theme-toggle { border-color: #00ffff; box-shadow: 0 0 10px rgba(0, 255, 255, 0.4); }
-        body.dark-mode .admin-toggle { border-color: var(--admin-color); box-shadow: 0 0 10px rgba(183, 0, 255, 0.4); }
+        body.dark-mode .theme-toggle { border-color: var(--visitor-color); box-shadow: 0 0 8px rgba(56, 189, 248, 0.3); }
+        body.dark-mode .admin-toggle { border-color: var(--admin-color); box-shadow: 0 0 8px rgba(167, 139, 250, 0.3); }
 
-        h1, h2, h3, h4 { margin-top: 0; color: var(--text-main); }
+        /* =========================================
+           5. RESPONSIVE TYPOGRAPHY
+           ========================================= */
+        h1, h2, h3, h4 { margin-top: 0; color: var(--text-main); font-weight: 700; }
         
-        /* === TYPOGRAPHY & FULL NEON GLOW === */
         .pre-title { 
-            text-align: center; color: var(--text-muted); font-size: 0.85rem; 
-            margin-bottom: 5px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; transition: all 0.3s;
+            text-align: center; color: var(--text-muted); font-size: 0.8rem; 
+            margin-bottom: 8px; text-transform: uppercase; letter-spacing: 2px; transition: all 0.3s;
         }
         .app-title { 
-            text-align: center; font-size: 3.5rem; font-weight: 900; margin-bottom: 5px; 
-            line-height: 1; text-transform: uppercase; letter-spacing: 2px;
-            background: linear-gradient(45deg, #1f2937, #0ea5e9);
+            text-align: center; font-size: clamp(2rem, 8vw, 3.5rem); font-weight: 900; margin-bottom: 8px; 
+            line-height: 1.1; text-transform: uppercase; letter-spacing: 1px;
+            background: linear-gradient(135deg, #0f172a, #0284c7);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent; transition: all 0.3s;
         }
         .app-subtitle { 
-            text-align: center; color: var(--visitor-color); font-size: 1.2rem; 
-            margin-bottom: 30px; font-weight: 600; font-style: italic; transition: all 0.3s;
+            text-align: center; color: var(--visitor-color); font-size: 1.1rem; 
+            margin-bottom: 35px; font-weight: 600; font-style: italic; transition: all 0.3s;
         }
 
-        body.dark-mode .pre-title { color: #f3f4f6; text-shadow: 0 0 5px rgba(255,255,255,0.5), 0 0 15px rgba(0, 255, 255, 0.3); }
+        body.dark-mode .pre-title { color: #cbd5e1; }
         body.dark-mode .app-title { 
             background: none; -webkit-text-fill-color: #ffffff; color: #ffffff; 
-            text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 40px #0ea5e9, 0 0 80px #0ea5e9; 
+            text-shadow: 0 0 8px rgba(56, 189, 248, 0.4), 0 0 15px rgba(56, 189, 248, 0.2); 
         }
-        body.dark-mode .app-subtitle { color: #a5f3fc; text-shadow: 0 0 8px #00ffff, 0 0 15px #00ffff; }
+        body.dark-mode .app-subtitle { color: #bae6fd; text-shadow: 0 0 8px rgba(56, 189, 248, 0.3); }
 
-        /* === PASSWORD CONTAINER STYLING === */
-        .password-container { position: relative; width: 100%; }
-        .password-container input { width: 100%; padding-right: 45px; }
-        .eye-btn {
-            position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
-            background: none; border: none; cursor: pointer; font-size: 1.1rem; color: var(--text-muted); padding: 0; width: auto;
-        }
-
-        /* === CHOICE CARDS & HOVER EFFECTS === */
-        .home-grid { display: flex; flex-direction: column; gap: 15px; }
-        .choice-card { 
-            background: var(--card-bg); padding: 25px 20px; text-align: center; 
-            border-radius: 16px; cursor: pointer; box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08); 
-            transition: transform 0.2s, background-color 0.3s, border-color 0.3s, box-shadow 0.3s; backdrop-filter: blur(15px);
-        }
-        .choice-card h2 { font-size: 1.4rem; margin-bottom: 5px; transition: text-shadow 0.3s, color 0.3s; }
-        .choice-card p { margin: 0; color: var(--text-muted); font-size: 0.9rem; }
-        .choice-card:active { transform: scale(0.98); }
+        /* =========================================
+           6. UI CARDS & PANELS
+           ========================================= */
+        .home-grid { display: flex; flex-direction: column; gap: 16px; }
         
-        .choice-card.visitor { border-left: 6px solid var(--visitor-color); }
-        .choice-card.staff { border-left: 6px solid var(--staff-color); }
+        .choice-card, .panel { 
+            background: var(--card-bg); border-radius: 20px; 
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05); 
+            transition: all 0.3s ease; backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+        }
         
-        body.dark-mode .choice-card { border: 1px solid rgba(255, 255, 255, 0.1); }
-        body.dark-mode .choice-card.visitor { border-left: 6px solid #00ffff; box-shadow: -4px 0 15px rgba(0, 255, 255, 0.2); }
-        body.dark-mode .choice-card.staff { border-left: 6px solid #00ff88; box-shadow: -4px 0 15px rgba(0, 255, 136, 0.2); }
-        
-        body.dark-mode .choice-card.visitor:hover h2 {
-            color: #ffffff !important; text-shadow: 0 0 12px #00ffff, 0 0 25px #00ffff, 0 0 40px #0ea5e9 !important;
-        }
-        body.dark-mode .choice-card.staff:hover h2 {
-            color: #ffffff !important; text-shadow: 0 0 12px #00ff88, 0 0 25px #00ff88, 0 0 40px #10b981 !important;
-        }
+        .choice-card { padding: 30px 20px; text-align: center; cursor: pointer; }
+        .choice-card:active { transform: scale(0.97); }
+        .choice-card h2 { font-size: 1.5rem; margin-bottom: 6px; transition: all 0.3s; }
+        .choice-card p { margin: 0; color: var(--text-muted); font-size: 0.95rem; }
 
-        /* Panels */
-        .panel { 
-            background: var(--card-bg); padding: 25px 20px; border-radius: 16px; 
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); margin-bottom: 20px; 
-            transition: background-color 0.3s; backdrop-filter: blur(15px);
-        }
-        body.dark-mode .panel { border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 10px 30px rgba(0, 255, 255, 0.05); }
-
+        .panel { padding: 25px 20px; margin-bottom: 20px; }
         .panel-header { 
             display: flex; justify-content: space-between; align-items: center; 
             border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 20px;
         }
         .panel-header h2 { font-size: 1.3rem; margin: 0; }
-        
-        body.dark-mode h2.neon-visitor { color: #00ffff !important; text-shadow: 0 0 8px rgba(0, 255, 255, 0.5); }
-        body.dark-mode h2.neon-staff { color: #00ff88 !important; text-shadow: 0 0 8px rgba(0, 255, 136, 0.5); }
-        body.dark-mode h2.neon-admin { color: #b700ff !important; text-shadow: 0 0 8px rgba(183, 0, 255, 0.5); }
+        .section-box { background: var(--input-bg); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 20px; }
 
-        /* Inputs & Buttons */
-        input { 
-            width: 100%; padding: 12px; margin: 8px 0 16px 0; border: 1px solid var(--input-border); border-radius: 10px; 
-            box-sizing: border-box; font-size: 1rem; background-color: var(--input-bg); color: var(--text-main);
+        body.dark-mode .choice-card, body.dark-mode .panel, body.dark-mode .section-box { 
+            background: var(--card-bg); border-color: rgba(255, 255, 255, 0.05);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
         }
-        input:focus { outline: none; border-color: var(--visitor-color); background-color: var(--card-bg); }
         
-        button { 
-            color: white; border: none; padding: 12px 20px; border-radius: 10px; 
-            cursor: pointer; font-weight: bold; width: 100%; font-size: 1rem; transition: background-color 0.2s;
+        body.dark-mode .choice-card.visitor { border-bottom: 3px solid var(--visitor-color); }
+        body.dark-mode .choice-card.staff { border-bottom: 3px solid var(--staff-color); }
+        body.dark-mode .panel[style*="var(--admin-color)"] { border-bottom: 3px solid var(--admin-color); }
+
+        body.dark-mode .choice-card.visitor:hover h2, body.dark-mode h2.neon-visitor {
+            color: #ffffff !important; text-shadow: 0 0 10px rgba(56, 189, 248, 0.6) !important;
         }
+        body.dark-mode .choice-card.staff:hover h2, body.dark-mode h2.neon-staff {
+            color: #ffffff !important; text-shadow: 0 0 10px rgba(52, 211, 153, 0.6) !important;
+        }
+        body.dark-mode h2.neon-admin {
+            color: #ffffff !important; text-shadow: 0 0 10px rgba(167, 139, 250, 0.6) !important;
+        }
+
+        /* =========================================
+           7. FORMS, INPUTS & BUTTONS
+           ========================================= */
+        input { 
+            width: 100%; padding: 14px; margin: 8px 0 16px 0; border: 1px solid var(--input-border); 
+            border-radius: 12px; box-sizing: border-box; font-size: 1rem; 
+            background-color: var(--input-bg); color: var(--text-main); transition: all 0.2s;
+        }
+        input:focus { outline: none; border-color: var(--visitor-color); box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1); }
+        
+        body.dark-mode input:focus { border-color: var(--visitor-color); box-shadow: 0 0 8px rgba(56, 189, 248, 0.2); }
+
+        .pin-input { text-align: center; font-size: 1.8rem; letter-spacing: 10px; font-weight: bold; }
+        .password-container { position: relative; width: 100%; }
+        .password-container input { padding-right: 50px; }
+        .eye-btn {
+            position: absolute; right: 15px; top: 50%; transform: translateY(-50%);
+            background: none; border: none; cursor: pointer; font-size: 1.2rem;
+            color: var(--text-muted); padding: 0; width: auto;
+        }
+
+        button { 
+            color: white; border: none; padding: 14px 20px; border-radius: 12px; 
+            cursor: pointer; font-weight: bold; width: 100%; font-size: 1rem; transition: all 0.2s;
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        button:active { transform: scale(0.98); }
+        
         .btn-visitor { background-color: var(--visitor-color); }
         .btn-staff { background-color: var(--staff-color); }
         .btn-admin { background-color: var(--admin-color); }
-        
-        body.dark-mode .btn-visitor { background-color: #0088aa; border: 1px solid #00ffff; box-shadow: 0 0 10px rgba(0, 255, 255, 0.4); }
-        body.dark-mode .btn-staff { background-color: #008844; border: 1px solid #00ff88; box-shadow: 0 0 10px rgba(0, 255, 136, 0.4); }
-        body.dark-mode .btn-admin { background-color: #660099; border: 1px solid #b700ff; box-shadow: 0 0 10px rgba(183, 0, 255, 0.4); }
-        
-        .scan-btn { background-color: #374151; margin-top: 10px; }
-        body.dark-mode .scan-btn { background-color: #1f2937; border: 1px solid #4b5563; }
-        .back-btn { background: var(--border-color); color: var(--text-main); width: auto; padding: 6px 10px; font-size: 0.85rem; border-radius: 8px; }
-        
-        .approve-btn { background: var(--success); width: auto; padding: 6px 12px; font-size: 0.85rem; }
-        body.dark-mode .approve-btn { background: #047857; border: 1px solid #10b981; }
-        .remove-btn { background: var(--danger); width: auto; padding: 6px 12px; font-size: 0.85rem; }
-        body.dark-mode .remove-btn { background: #991b1b; border: 1px solid #ef4444; }
-        .logout-btn { background: var(--danger); width: auto; padding: 5px 10px; font-size: 0.8rem; margin-top: 10px;}
+        .scan-btn { background-color: #475569; margin-top: 10px; }
+        .back-btn { background: var(--input-border); color: var(--text-main); width: auto; padding: 8px 14px; font-size: 0.85rem; border-radius: 8px; text-transform: none; }
+        .approve-btn { background: var(--success); width: auto; padding: 8px 14px; font-size: 0.85rem; text-transform: none; }
+        .remove-btn { background: var(--danger); width: auto; padding: 8px 14px; font-size: 0.85rem; text-transform: none; }
+        .logout-btn { background: var(--danger); width: auto; padding: 10px 15px; font-size: 0.9rem; margin-top: 15px;}
 
-        .auth-toggle { text-align: center; margin-top: 15px; font-size: 0.9rem; color: var(--text-muted); }
-        .auth-toggle span { font-weight: bold; cursor: pointer; text-decoration: underline; }
+        /* SOFTER DARK MODE BUTTONS - Deep backgrounds with soft borders */
+        body.dark-mode .btn-visitor { background-color: #0369a1; box-shadow: 0 4px 10px rgba(0,0,0,0.3); border: 1px solid var(--visitor-color); color: #f8fafc; }
+        body.dark-mode .btn-staff { background-color: #047857; box-shadow: 0 4px 10px rgba(0,0,0,0.3); border: 1px solid var(--staff-color); color: #f8fafc; }
+        body.dark-mode .btn-admin { background-color: #5b21b6; box-shadow: 0 4px 10px rgba(0,0,0,0.3); border: 1px solid var(--admin-color); color: #f8fafc; }
+        body.dark-mode .scan-btn { background-color: #1e293b; border: 1px solid #475569; }
+        body.dark-mode .back-btn { background: #1e293b; color: #e2e8f0; border: 1px solid #334155; }
+        
+        .auth-toggle { text-align: center; margin-top: 20px; font-size: 0.95rem; color: var(--text-muted); }
+        .auth-toggle span { font-weight: bold; cursor: pointer; text-decoration: underline; padding: 5px; }
         .toggle-visitor { color: var(--visitor-color); }
         .toggle-staff { color: var(--staff-color); }
-        body.dark-mode .toggle-visitor { color: #00ffff; }
-        body.dark-mode .toggle-staff { color: #00ff88; }
+        body.dark-mode .toggle-visitor { color: var(--visitor-color); text-shadow: none; }
+        body.dark-mode .toggle-staff { color: var(--staff-color); text-shadow: none; }
 
-        /* Badges & Scanner */
-        .status-badge { display: inline-block; padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; }
-        .bg-pending { background: #fef3c7; color: #d97706; }
+        /* =========================================
+           8. BADGES, SCANNER & LISTS
+           ========================================= */
+        .status-badge { display: inline-block; padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;}
+        .bg-pending { background: #fef3c7; color: #b45309; }
         .bg-success { background: #d1fae5; color: #047857; }
-        .bg-danger { background: var(--danger); color: white; }
+        .bg-danger { background: #fee2e2; color: #be123c; }
         
-        body.dark-mode .bg-pending { background: rgba(217, 119, 6, 0.2); color: #fcd34d; border: 1px solid #fbbf24; }
-        body.dark-mode .bg-success { background: rgba(4, 120, 87, 0.2); color: #34d399; border: 1px solid #10b981; }
-        body.dark-mode .bg-danger { background: rgba(153, 27, 27, 0.4); color: #fca5a5; border: 1px solid #ef4444; }
+        body.dark-mode .bg-pending { background: rgba(245, 158, 11, 0.15); color: #fcd34d; border: 1px solid #b45309; }
+        body.dark-mode .bg-success { background: rgba(16, 185, 129, 0.15); color: #6ee7b7; border: 1px solid #047857; }
+        body.dark-mode .bg-danger { background: rgba(225, 29, 72, 0.15); color: #fda4af; border: 1px solid #be123c; }
 
-        .scanner-box { background: #111827; color: white; padding: 20px; border-radius: 16px; margin-top: 20px; border: 1px solid var(--border-color); }
-        .camera-view { border: 2px dashed #4b5563; padding: 20px 10px; text-align: center; border-radius: 10px; background: #000; margin-bottom: 10px;}
+        .scanner-box { background: var(--text-main); color: var(--bg-color); padding: 20px; border-radius: 16px; margin-top: 20px; }
+        body.dark-mode .scanner-box { background: #1e293b; color: #f8fafc; border: 1px solid #334155; }
+        .camera-view { background: #000; border-radius: 12px; overflow: hidden; margin-bottom: 15px; border: 2px dashed #475569; min-height: 220px;}
         
-        .status-msg { margin-top: 15px; font-weight: bold; padding: 12px; border-radius: 8px; text-align: center; font-size: 0.9rem;}
+        .status-msg { margin-top: 15px; font-weight: bold; padding: 12px; border-radius: 10px; text-align: center; font-size: 0.95rem;}
         .msg-success { background: #d1fae5; color: #065f46; border: 1px solid #34d399; }
-        .msg-error { background: #fee2e2; color: #b91c1c; border: 1px solid #f87171; }
+        .msg-error { background: #fee2e2; color: #9f1239; border: 1px solid #fda4af; }
         .hidden { display: none !important; }
         
-        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 5px; border-bottom: 1px solid var(--border-color); }
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 5px; border-bottom: 1px solid var(--border-color); }
         .list-item:last-child { border-bottom: none; }
-        .section-box { background: var(--input-bg); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 20px; }
-        body.dark-mode .section-box { border-color: rgba(255, 255, 255, 0.05); }
+        .scanned-by-text { color: var(--visitor-color); font-size: 0.8rem; margin-left: 8px; font-weight: bold; }
+        body.dark-mode .scanned-by-text { color: var(--visitor-color); }
+
+        /* =========================================
+           9. FULL SCREEN WELCOME OVERLAY
+           ========================================= */
+        #welcomeOverlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-color); z-index: 2000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
+        }
+        #welcomeOverlay.active { opacity: 1; pointer-events: auto; }
+        
+        .welcome-content { text-align: center; padding: 20px; animation: scaleUp 0.5s ease-out; }
+        @keyframes scaleUp { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        
+        .welcome-title {
+            font-size: clamp(2.5rem, 10vw, 4.5rem); font-weight: 900; margin-bottom: 10px;
+            color: #4c1d95; font-family: 'Georgia', serif; letter-spacing: 2px;
+        }
+        .welcome-subtitle { font-size: clamp(1.2rem, 5vw, 1.8rem); color: var(--text-muted); font-style: italic; margin-bottom: 30px; }
+        .tap-continue { font-size: 0.9rem; color: var(--text-muted); opacity: 0.7; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
+
+        body.dark-mode #welcomeOverlay { background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); }
+        body.dark-mode .welcome-title { color: #f8fafc; text-shadow: 0 0 15px rgba(167, 139, 250, 0.5); }
+        body.dark-mode .welcome-subtitle { color: #e2e8f0; }
+
+        /* =========================================
+           10. FOOTER SECTION
+           ========================================= */
+        .app-footer {
+            width: 100%; max-width: 500px; margin-top: auto; padding: 30px 15px 15px;
+            text-align: center; color: var(--text-muted); border-top: 1px solid var(--border-color); z-index: 1;
+        }
+
+        .about-tab {
+            cursor: pointer; display: inline-block; font-weight: 700;
+            color: var(--visitor-color); margin-bottom: 15px; font-size: 1rem; transition: all 0.3s;
+        }
+        .about-tab:hover { text-decoration: underline; }
+        body.dark-mode .about-tab { color: var(--visitor-color); }
+
+        .about-content {
+            background: var(--card-bg); border: 1px solid var(--border-color);
+            padding: 15px; border-radius: 12px; margin-bottom: 20px;
+            font-size: 0.95rem; color: var(--text-main); line-height: 1.5;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05); animation: slideDown 0.3s ease-out forwards;
+        }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .copyright { font-size: 0.85rem; }
+        
+        .visitor-counter-box {
+            margin-top: 15px; padding: 10px; border-radius: 8px; font-weight: bold;
+            background: rgba(124, 58, 237, 0.1); border: 1px solid var(--admin-color);
+            color: var(--admin-color); display: inline-block;
+        }
+        body.dark-mode .visitor-counter-box {
+            background: rgba(167, 139, 250, 0.1); color: #d8b4fe;
+            border-color: #a78bfa; box-shadow: 0 0 10px rgba(167, 139, 250, 0.1);
+        }
     </style>
 </head>
 <body>
 
-<!-- SECRET ADMIN ICON (Top Left) -->
-<button class="icon-btn admin-toggle" onclick="switchView('view-admin')" title="Master Control Dashboard">🛡️</button>
-<!-- THEME ICON (Top Right) -->
+<!-- === FULL SCREEN WELCOME OVERLAY === -->
+<div id="welcomeOverlay" class="hidden" onclick="hideWelcomeScreen()">
+    <div class="welcome-content">
+        <h1 class="welcome-title">Welcome to IIA</h1>
+        <p class="welcome-subtitle">Thank you for joining us.</p>
+        <p class="tap-continue">(Tap anywhere to close)</p>
+    </div>
+</div>
+
+<!-- SECRET ADMIN ICON (Double Tap) -->
+<button class="icon-btn admin-toggle" onclick="handleAdminIconClick()" title="Info">🛡️</button>
+<!-- THEME ICON -->
 <button id="themeToggle" class="icon-btn theme-toggle" onclick="toggleTheme()" title="Toggle Day/Night Mode">🌙</button>
 
 <div class="container">
 
     <!-- === HOME SCREEN === -->
     <div id="view-home" class="view-section active">
-        <h4 class="pre-title">Inside Inspiration Academy Presents</h4>
-        <h1 class="app-title">IIA Fest</h1>
-        <p class="app-subtitle">Welcome to Our Best Programme</p>
+        <h4 class="pre-title">Inside Inspiration Academy's Students Presents</h4>
+        <h1 class="app-title">TEACHERS DAY 2K26</h1>
+        <p class="app-subtitle">Welcome to our highly anticipated program</p>
         
-        <p style="text-align: center; color: var(--text-muted); margin-bottom: 15px; font-size: 0.9rem;">Select your portal to continue</p>
+        <p style="text-align: center; color: var(--text-muted); margin-bottom: 15px; font-size: 0.95rem;">Select your portal to continue</p>
         
         <div class="home-grid">
             <div class="choice-card visitor" onclick="switchView('view-visitor')">
@@ -266,21 +374,21 @@
                         <button type="button" class="eye-btn" onclick="togglePassword('vSignupPass', this)">👁️</button>
                     </div>
                     <button type="submit" class="btn-visitor">Sign Up</button>
-                    <div id="vSignupError" class="status-msg msg-error hidden">Email already exists.</div>
+                    <div id="vSignupError" class="status-msg msg-error hidden"></div>
                     <div class="auth-toggle">Have an account? <span class="toggle-visitor" onclick="toggleAuth('visitor', 'login')">Log In</span></div>
                 </form>
             </div>
 
             <div id="visitorDashboard" class="hidden">
-                <h3 id="vWelcomeMsg"></h3>
-                <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0;">Your event entry pass</p>
+                <h3 id="vWelcomeMsg" style="margin-bottom: 5px;"></h3>
+                <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 0; margin-bottom: 20px;">Your event entry pass</p>
                 
                 <button id="btnRequestPass" class="btn-visitor" onclick="requestTicket()">Request Digital Pass</button>
 
                 <div id="userTicketDisplay" class="section-box hidden" style="text-align: center;">
-                    <h3 id="tktName" style="margin: 0 0 5px 0;"></h3>
+                    <h3 id="tktName" style="margin: 0 0 10px 0; font-size: 1.5rem;"></h3>
                     <span id="tktStatus" class="status-badge bg-pending">Pending Approval</span><br>
-                    <div id="tktQrContainer" style="background: white; padding: 10px; border-radius: 8px; display: inline-block; margin-top: 15px;">
+                    <div id="tktQrContainer" style="background: white; padding: 15px; border-radius: 12px; display: inline-block; margin-top: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
                         <canvas id="qrCanvas"></canvas>
                     </div>
                 </div>
@@ -319,7 +427,7 @@
                         <button type="button" class="eye-btn" onclick="togglePassword('sSignupPass', this)">👁️</button>
                     </div>
                     <button type="submit" class="btn-staff">Register for Approval</button>
-                    <div id="sSignupError" class="status-msg msg-error hidden">Email already registered.</div>
+                    <div id="sSignupError" class="status-msg msg-error hidden"></div>
                     <div class="auth-toggle">Registered? <span class="toggle-staff" onclick="toggleAuth('staff', 'login')">Log In</span></div>
                 </form>
             </div>
@@ -328,20 +436,25 @@
                 <h3 id="sWelcomeMsg" style="margin-top:0;"></h3>
                 
                 <div class="section-box">
-                    <h3 style="font-size: 1rem; margin: 0 0 10px 0;">Pending Student Approvals</h3>
+                    <h3 style="font-size: 1.1rem; margin: 0 0 10px 0;">Pending Student Approvals</h3>
                     <div id="staffPendingList" style="font-size: 0.95rem;"></div>
                 </div>
 
                 <div class="section-box">
-                    <h3 style="font-size: 1rem; margin: 0 0 10px 0;">Active Student Passes</h3>
+                    <h3 style="font-size: 1.1rem; margin: 0 0 10px 0;">Active Student Passes</h3>
                     <div id="staffApprovedList" style="font-size: 0.95rem;"></div>
                 </div>
                 
                 <div class="scanner-box">
-                    <h3 style="margin-top:0; font-size: 1.1rem; color: white;">📱 Door Scanner</h3>
-                    <div class="camera-view"><span style="font-size: 2rem;">📷</span><br><span style="font-size: 0.85rem; color: #9ca3af;">Camera Ready</span></div>
-                    <input type="text" id="staffScannerInput" placeholder="Enter Ticket ID..." style="background: white; color: black; border:none;">
-                    <button class="scan-btn" onclick="serverScan('staffScannerInput', 'staffScanResult')">Scan Pass</button>
+                    <h3 style="margin-top:0; font-size: 1.2rem;">📱 Live Door Scanner</h3>
+                    
+                    <div id="staff-reader" class="camera-view"></div>
+                    <button class="scan-btn" onclick="startCamera('staff-reader', 'staffScanResult')" style="background-color: var(--success); border: none; color: white;">Start Camera Scanner</button>
+                    
+                    <div style="margin-top: 15px; display: flex; gap: 10px;">
+                        <input type="text" id="staffScannerInput" placeholder="Simulate (Enter ID)" style="background: var(--input-bg); color: var(--text-main); border:1px solid var(--border-color); margin: 0; flex: 2;">
+                        <button class="scan-btn" onclick="processScan(document.getElementById('staffScannerInput').value, 'staffScanResult')" style="margin: 0; flex: 1;">Enter</button>
+                    </div>
                     <div id="staffScanResult" class="status-msg hidden"></div>
                 </div>
                 <button class="logout-btn" onclick="logout('staff')">Log Out</button>
@@ -364,54 +477,225 @@
                     <input type="password" id="aLoginPass" placeholder="Master Password">
                     <button type="button" class="eye-btn" onclick="togglePassword('aLoginPass', this)">👁️</button>
                 </div>
-                <button class="btn-admin" onclick="handleAdminLogin()">Access Master Control</button>
+                <button class="btn-admin" onclick="handleAdminLogin()">Next</button>
                 <div id="aLoginError" class="status-msg msg-error hidden">Access Denied</div>
+            </div>
+
+            <div id="admin2FASection" class="hidden">
+                <h3 style="text-align: center; color: var(--admin-color);">2-Step Verification</h3>
+                <p style="text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Enter the 6-digit Master Security PIN to continue.</p>
+                <input type="password" id="aLoginPin" class="pin-input" placeholder="••••••" maxlength="6" pattern="\d{6}" autocomplete="off">
+                <button class="btn-admin" onclick="verifyAdminPin()">Verify & Access</button>
+                <button class="back-btn" onclick="cancelAdminLogin()" style="margin-top: 15px; width: 100%; text-align: center;">Cancel Login</button>
+                <div id="aPinError" class="status-msg msg-error hidden">Invalid PIN Code</div>
             </div>
 
             <div id="adminDashboard" class="hidden">
                 <h3 style="margin-top:0;">Master Dashboard</h3>
                 
+                <button class="btn-admin" onclick="downloadPDF()" style="margin-bottom: 25px;">
+                    📄 Download Event Report (PDF)
+                </button>
+                
                 <div class="section-box" style="border-left: 4px solid var(--admin-color);">
-                    <h3 style="font-size: 1rem; margin: 0 0 10px 0;">🛡️ Pending Admin Approvals</h3>
+                    <h3 style="font-size: 1.1rem; margin: 0 0 10px 0;">🛡️ Pending Admin Approvals</h3>
                     <div id="adminStaffApprovalList" style="font-size: 0.95rem;"></div>
                 </div>
 
                 <div class="section-box">
-                    <h3 style="font-size: 1rem; margin: 0 0 10px 0;">👥 Approved Admins</h3>
+                    <h3 style="font-size: 1.1rem; margin: 0 0 10px 0;">👥 Approved Admins</h3>
                     <div id="adminStaffList" style="font-size: 0.95rem;"></div>
                 </div>
 
                 <div class="section-box">
-                    <h3 style="font-size: 1rem; margin: 0 0 10px 0;">Pending Student Authorizations</h3>
+                    <h3 style="font-size: 1.1rem; margin: 0 0 10px 0;">Pending Student Authorizations</h3>
                     <div id="adminPendingList" style="font-size: 0.95rem;"></div>
                 </div>
 
                 <div class="section-box">
-                    <h3 style="font-size: 1rem; margin: 0 0 10px 0;">All Active Student Passes</h3>
+                    <h3 style="font-size: 1.1rem; margin: 0 0 10px 0;">All Active Student Passes</h3>
                     <div id="adminApprovedList" style="font-size: 0.95rem;"></div>
+                </div>
+
+                <div class="section-box" style="border-left: 4px solid var(--success);">
+                    <h3 style="font-size: 1.1rem; margin: 0 0 10px 0;">📍 Present in Venue (Scanned)</h3>
+                    <div id="adminPresentList" style="font-size: 0.95rem;"></div>
                 </div>
                 
                 <div class="scanner-box">
-                    <h3 style="margin-top:0; font-size: 1.1rem; color: white;">📱 Master Override Scanner</h3>
-                    <input type="text" id="adminScannerInput" placeholder="Enter Ticket ID..." style="background: white; color: black; border:none;">
-                    <button class="scan-btn" onclick="serverScan('adminScannerInput', 'adminScanResult')">Override Scan</button>
+                    <h3 style="margin-top:0; font-size: 1.2rem;">📱 Master Override Scanner</h3>
+                    
+                    <div id="master-reader" class="camera-view"></div>
+                    <button class="scan-btn" onclick="startCamera('master-reader', 'adminScanResult')" style="background-color: var(--success); border: none; color: white;">Start Camera Scanner</button>
+                    
+                    <div style="margin-top: 15px; display: flex; gap: 10px;">
+                        <input type="text" id="adminScannerInput" placeholder="Simulate (Enter ID)" style="background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border-color); margin: 0; flex: 2;">
+                        <button class="scan-btn" onclick="processScan(document.getElementById('adminScannerInput').value, 'adminScanResult')" style="margin: 0; flex: 1;">Enter</button>
+                    </div>
                     <div id="adminScanResult" class="status-msg hidden"></div>
                 </div>
                 <button class="logout-btn" onclick="logout('admin')">Lock Dashboard</button>
             </div>
         </div>
     </div>
-
 </div>
 
+<!-- === FOOTER SECTION === -->
+<footer class="app-footer">
+    <div class="about-tab" onclick="toggleAbout()">About 🔽</div>
+    <div id="aboutContent" class="about-content hidden">
+        <strong>Inside Inspiration Academy</strong><br>
+        -Founded by Biswajit Saha
+    </div>
+    
+    <!-- SECURE LIVE VISITOR COUNTER -->
+    <div id="footerVisitorCount" class="hidden">
+        <div class="visitor-counter-box">
+            📈 Registered Students: <span id="totalVisitorCount">0</span>
+        </div>
+    </div>
+    
+    <div class="copyright" style="margin-top: 15px;">© Copyright by IIA ,2026</div>
+</footer>
+
 <script>
+    // --- ICON CLICK LISTENER (Single = Welcome, Double = Master Admin) ---
+    let adminIconTimer = null;
+    function handleAdminIconClick() {
+        if (adminIconTimer === null) {
+            adminIconTimer = setTimeout(() => {
+                adminIconTimer = null;
+                document.getElementById('welcomeOverlay').classList.remove('hidden');
+                setTimeout(() => {
+                    document.getElementById('welcomeOverlay').classList.add('active');
+                }, 10);
+            }, 300);
+        } else {
+            clearTimeout(adminIconTimer);
+            adminIconTimer = null;
+            switchView('view-admin');
+        }
+    }
+
+    function hideWelcomeScreen() {
+        document.getElementById('welcomeOverlay').classList.remove('active');
+        setTimeout(() => {
+            document.getElementById('welcomeOverlay').classList.add('hidden');
+        }, 400); 
+    }
+
+    // --- VISITOR COUNTER LOGIC ---
+    function updateFooterCounter() {
+        const counterDiv = document.getElementById('footerVisitorCount');
+        const countSpan = document.getElementById('totalVisitorCount');
+        
+        if (isAdminLoggedIn || (currentStaff && currentStaff.status === 'Approved')) {
+            countSpan.innerText = visitors.length;
+            counterDiv.classList.remove('hidden');
+        } else {
+            counterDiv.classList.add('hidden');
+        }
+    }
+
+    // --- REAL EMAIL VALIDATOR ---
+    function isValidEmailDomain(email) {
+        const allowedDomains = ['gmail.com', 'hotmail.com', 'yahoo.com', 'outlook.com', 'icloud.com', 'aol.com'];
+        const domain = email.split('@')[1];
+        return allowedDomains.includes(domain);
+    }
+
+    // --- ABOUT TAB TOGGLE ---
+    function toggleAbout() {
+        const content = document.getElementById('aboutContent');
+        const tab = document.querySelector('.about-tab');
+        if(content.classList.contains('hidden')) {
+            content.classList.remove('hidden');
+            tab.innerText = "About 🔼";
+        } else {
+            content.classList.add('hidden');
+            tab.innerText = "About 🔽";
+        }
+    }
+
+    // --- PDF EXPORT FEATURE ---
+    function downloadPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        
+        doc.setFontSize(18);
+        doc.text("TEACHERS DAY 2K26 - Master Event Report", 14, 20);
+        doc.setFontSize(12);
+        
+        doc.text("1. Present in Venue (Scanned & Verified)", 14, 30);
+        const presentData = tickets.filter(t => t.status === 'Used').map(t => [t.name, t.email, t.id, t.scannedBy || 'Master']);
+        doc.autoTable({ startY: 35, head: [['Student Name', 'Email', 'Pass ID', 'Verified By']], body: presentData });
+        let finalY = doc.lastAutoTable.finalY || 35;
+        
+        doc.text("2. Active / Approved Passes (Not Scanned Yet)", 14, finalY + 15);
+        const activeData = tickets.filter(t => t.status === 'Approved').map(t => [t.name, t.email, t.id]);
+        doc.autoTable({ startY: finalY + 20, head: [['Student Name', 'Email', 'Pass ID']], body: activeData });
+        finalY = doc.lastAutoTable.finalY || finalY + 20;
+
+        doc.text("3. Authorized Admins", 14, finalY + 15);
+        const adminData = staffMembers.filter(s => s.status === 'Approved').map(s => [s.name, s.email]);
+        doc.autoTable({ startY: finalY + 20, head: [['Admin Name', 'Email']], body: adminData });
+        
+        doc.save("TEACHERS_DAY_2K26_Event_Report.pdf");
+    }
+
+    // --- LIVE CAMERA SCANNER LOGIC ---
+    let html5QrCode;
+    function startCamera(readerElementId, resultElementId) {
+        if(html5QrCode) {
+            html5QrCode.stop().then(() => { html5QrCode.clear(); }).catch(err => console.log(err));
+        }
+        document.getElementById(resultElementId).classList.add('hidden');
+        html5QrCode = new Html5Qrcode(readerElementId);
+        
+        html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } }, 
+        (decodedText) => {
+            html5QrCode.stop();
+            document.getElementById(readerElementId).innerHTML = '<div style="color:#10b981; padding:40px 0; font-size:1.5rem; font-weight:bold; text-align:center;">✅ QR Detected! Processing...</div>';
+            processScan(decodedText, resultElementId);
+        }, 
+        (errorMessage) => {}).catch(err => {
+            document.getElementById(resultElementId).innerText = "Camera access denied. Ensure you are on a secure (HTTPS) connection or use manual entry.";
+            document.getElementById(resultElementId).classList.remove('hidden');
+            document.getElementById(resultElementId).classList.add('msg-error');
+        });
+    }
+
+    function processScan(decodedText, resultId) {
+        const id = decodedText.trim();
+        const res = document.getElementById(resultId);
+        res.classList.remove('hidden', 'msg-success', 'msg-error');
+        
+        if(!id) {
+            res.innerText = "❌ Please enter a valid Pass ID"; res.classList.add('msg-error'); return;
+        }
+
+        let t = tickets.find(t => t.id === id);
+
+        if(!t || t.status === 'Pending' || t.status === 'Revoked') {
+            res.innerText = "❌ Pass Not Found or Unauthorized"; res.classList.add('msg-error');
+        } else if (t.status === 'Used') {
+            res.innerText = `⚠️ Alert: Pass Already Used! (${t.name})`; res.classList.add('msg-error');
+        } else if (t.status === 'Approved') {
+            t.status = 'Used'; 
+            
+            if (isAdminLoggedIn) { t.scannedBy = 'Master Admin'; } 
+            else if (currentStaff) { t.scannedBy = currentStaff.name; } 
+            else { t.scannedBy = 'System'; }
+
+            res.innerHTML = `✅ VERIFIED<br><small>Entry granted for: ${t.name}</small>`; res.classList.add('msg-success');
+            refreshDashboards();
+        }
+    }
+
     function togglePassword(fieldId, btn) {
         const input = document.getElementById(fieldId);
-        if (input.type === "password") {
-            input.type = "text"; btn.innerText = "🙈"; 
-        } else {
-            input.type = "password"; btn.innerText = "👁️"; 
-        }
+        if (input.type === "password") { input.type = "text"; btn.innerText = "🙈"; } 
+        else { input.type = "password"; btn.innerText = "👁️"; }
     }
 
     function toggleTheme() {
@@ -424,15 +708,35 @@
     function switchView(viewId) {
         document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
         document.getElementById(viewId).classList.add('active');
-        fetchServerData();
+        
+        if(html5QrCode && html5QrCode.isScanning) {
+            html5QrCode.stop().then(() => { html5QrCode.clear(); }).catch(e => {});
+        }
+        
+        refreshDashboards();
     }
 
-    let currentUser = null; // Stores logged-in student or admin info
-    let serverTickets = [];
-    let serverAdmins = [];
+    function refreshDashboards() {
+        if(currentVisitor) updateVisitorUI();
+        if(currentStaff) updateStaffUI();
+        if(isAdminLoggedIn) updateAdminUI();
+        updateFooterCounter();
+    }
+
+    let visitors = []; 
+    let staffMembers = []; 
+    let tickets = [];  
+    
+    let currentVisitor = null; 
+    let currentStaff = null;
+    let isAdminLoggedIn = false;
 
     function toggleAuth(role, type) {
-        document.querySelectorAll('.status-msg').forEach(el => el.classList.add('hidden'));
+        document.getElementById(`vLoginError`).classList.add('hidden');
+        document.getElementById(`vSignupError`).classList.add('hidden');
+        document.getElementById(`sLoginError`).classList.add('hidden');
+        document.getElementById(`sSignupError`).classList.add('hidden');
+        
         if (type === 'signup') {
             document.getElementById(`form${role.charAt(0).toUpperCase() + role.slice(1)}Login`).classList.add('hidden');
             document.getElementById(`form${role.charAt(0).toUpperCase() + role.slice(1)}Signup`).classList.remove('hidden');
@@ -443,95 +747,73 @@
     }
 
     function logout(role) {
-        currentUser = null;
+        if(html5QrCode && html5QrCode.isScanning) html5QrCode.stop().catch(e => {});
         if(role === 'visitor') {
+            currentVisitor = null;
             document.getElementById('visitorDashboard').classList.add('hidden');
             document.getElementById('visitorAuthSection').classList.remove('hidden');
             toggleAuth('visitor', 'login');
         } else if (role === 'staff') {
+            currentStaff = null;
             document.getElementById('staffDashboard').classList.add('hidden');
             document.getElementById('staffAuthSection').classList.remove('hidden');
             toggleAuth('staff', 'login');
         } else if (role === 'admin') {
+            isAdminLoggedIn = false;
             document.getElementById('adminDashboard').classList.add('hidden');
+            document.getElementById('admin2FASection').classList.add('hidden');
+            document.getElementById('aLoginUser').value = '';
+            document.getElementById('aLoginPass').value = '';
+            document.getElementById('aLoginPin').value = '';
             document.getElementById('adminAuthSection').classList.remove('hidden');
         }
+        updateFooterCounter();
     }
 
-    // --- FETCH DATA FROM SERVER ---
-    async function fetchServerData() {
-        try {
-            const res = await fetch('/api/data');
-            const data = await res.json();
-            serverTickets = data.tickets || [];
-            serverAdmins = data.users || [];
-            updateUIs();
-        } catch (err) {
-            console.error("Failed to sync with server:", err);
-        }
-    }
-
-    function updateUIs() {
-        if (currentUser && currentUser.role === 'student') updateStudentUI();
-        if (currentUser && currentUser.role === 'admin') updateStaffUI();
-        if (currentUser && currentUser.role === 'master') updateAdminUI();
-    }
-
-    // --- STUDENT AUTH & TICKET REQUEST ---
-    document.getElementById('formVisitorSignup').addEventListener('submit', async e => {
+    // --- STUDENT REGISTRATION ---
+    document.getElementById('formVisitorSignup').addEventListener('submit', e => {
         e.preventDefault();
-        const res = await fetch('/api/register', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                name: document.getElementById('vSignupName').value,
-                email: document.getElementById('vSignupEmail').value,
-                password: document.getElementById('vSignupPass').value,
-                role: 'student'
-            })
-        });
-        const data = await res.json();
-        if (res.ok) {
-            alert('Signup successful! Please log in.');
-            toggleAuth('visitor', 'login');
-        } else {
-            document.getElementById('vSignupError').innerText = data.error;
-            document.getElementById('vSignupError').classList.remove('hidden');
+        const n = document.getElementById('vSignupName').value;
+        const eMail = document.getElementById('vSignupEmail').value;
+        const p = document.getElementById('vSignupPass').value;
+        
+        if (!isValidEmailDomain(eMail)) {
+            const err = document.getElementById('vSignupError');
+            err.innerText = "Please use a real email provider (e.g., @gmail.com, @yahoo.com)";
+            err.classList.remove('hidden'); return;
         }
+        if (visitors.find(v => v.email === eMail)) {
+            const err = document.getElementById('vSignupError');
+            err.innerText = "Email already exists.";
+            err.classList.remove('hidden'); return;
+        }
+
+        currentVisitor = { name: n, email: eMail, pass: p };
+        visitors.push(currentVisitor);
+        e.target.reset();
+        
+        updateFooterCounter(); 
+        showVisitorDashboard();
     });
 
-    document.getElementById('formVisitorLogin').addEventListener('submit', async e => {
+    document.getElementById('formVisitorLogin').addEventListener('submit', e => {
         e.preventDefault();
-        const res = await fetch('/api/login', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                email: document.getElementById('vLoginEmail').value,
-                password: document.getElementById('vLoginPass').value,
-                role: 'student'
-            })
-        });
-        const data = await res.json();
-        if (res.ok) {
-            currentUser = data;
-            document.getElementById('visitorAuthSection').classList.add('hidden');
-            document.getElementById('visitorDashboard').classList.remove('hidden');
-            document.getElementById('vWelcomeMsg').innerText = `Welcome, ${currentUser.name}!`;
-            fetchServerData();
-        } else {
-            document.getElementById('vLoginError').innerText = data.error;
-            document.getElementById('vLoginError').classList.remove('hidden');
-        }
+        const eMail = document.getElementById('vLoginEmail').value;
+        const p = document.getElementById('vLoginPass').value;
+        const u = visitors.find(v => v.email === eMail && v.pass === p);
+        if (u) { currentVisitor = u; e.target.reset(); showVisitorDashboard(); } 
+        else { document.getElementById('vLoginError').classList.remove('hidden'); }
     });
 
-    async function requestTicket() {
-        const res = await fetch('/api/ticket/request', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: currentUser.email, name: currentUser.name })
-        });
-        fetchServerData();
+    function showVisitorDashboard() {
+        document.getElementById('visitorAuthSection').classList.add('hidden');
+        document.getElementById('visitorDashboard').classList.remove('hidden');
+        document.getElementById('vWelcomeMsg').innerText = `Welcome, ${currentVisitor.name}!`;
+        updateVisitorUI();
     }
 
-    function updateStudentUI() {
-        const tkt = serverTickets.find(t => t.email === currentUser.email);
+    function updateVisitorUI() {
+        const tkt = tickets.find(t => t.email === currentVisitor.email);
         const btn = document.getElementById('btnRequestPass');
         const disp = document.getElementById('userTicketDisplay');
         const badge = document.getElementById('tktStatus');
@@ -547,84 +829,113 @@
                 badge.innerText = 'Pending Approval'; badge.className = 'status-badge bg-pending'; qrBox.classList.add('hidden');
             } else if (tkt.status === 'Approved') {
                 badge.innerText = 'Pass Authorized'; badge.className = 'status-badge bg-success'; qrBox.classList.remove('hidden');
-                new QRious({ element: document.getElementById('qrCanvas'), value: tkt.ticketId, size: 160, level: 'H' });
+                new QRious({ element: document.getElementById('qrCanvas'), value: tkt.id, size: 200, level: 'H' });
             } else if (tkt.status === 'Used') {
-                badge.innerText = 'Pass Used (Verified)'; badge.className = 'status-badge'; badge.style.background = 'var(--border-color)'; badge.style.color = 'var(--text-main)'; qrBox.classList.remove('hidden'); 
+                badge.innerText = 'Pass Used (Entry Verified)'; badge.className = 'status-badge'; badge.style.background = 'var(--border-color)'; badge.style.color = 'var(--text-main)'; qrBox.classList.remove('hidden'); 
             } else if (tkt.status === 'Revoked') {
                 badge.innerText = 'Pass Revoked'; badge.className = 'status-badge bg-danger'; qrBox.classList.add('hidden');
             }
         }
     }
 
-    // --- ADMIN AUTH & DASHBOARD ---
-    document.getElementById('formStaffSignup').addEventListener('submit', async e => {
+    function requestTicket() {
+        tickets.push({ id: 'TD26-' + Math.floor(Math.random() * 90000 + 10000), email: currentVisitor.email, name: currentVisitor.name, status: 'Pending' });
+        updateVisitorUI();
+    }
+
+    // --- ADMIN AUTHENTICATION ---
+    document.getElementById('formStaffSignup').addEventListener('submit', e => {
         e.preventDefault();
-        const res = await fetch('/api/register', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                name: document.getElementById('sSignupName').value,
-                email: document.getElementById('sSignupEmail').value,
-                password: document.getElementById('sSignupPass').value,
-                role: 'admin'
-            })
-        });
-        if (res.ok) {
-            alert('Admin registration submitted! Awaiting Master Admin approval.');
-            toggleAuth('staff', 'login');
+        const n = document.getElementById('sSignupName').value;
+        const eMail = document.getElementById('sSignupEmail').value;
+        const p = document.getElementById('sSignupPass').value;
+        
+        if (!isValidEmailDomain(eMail)) {
+            const err = document.getElementById('sSignupError');
+            err.innerText = "Please use a real email provider (e.g., @gmail.com, @yahoo.com)";
+            err.classList.remove('hidden'); return;
+        }
+        if (staffMembers.find(s => s.email === eMail)) {
+            const err = document.getElementById('sSignupError');
+            err.innerText = "Email already registered.";
+            err.classList.remove('hidden'); return;
+        }
+        
+        const newAdmin = { name: n, email: eMail, pass: p, status: 'Pending' };
+        staffMembers.push(newAdmin);
+        e.target.reset();
+        alert('Registration submitted! Please wait for Master Admin approval to log in.');
+        toggleAuth('staff', 'login');
+    });
+
+    document.getElementById('formStaffLogin').addEventListener('submit', e => {
+        e.preventDefault();
+        const eMail = document.getElementById('sLoginEmail').value;
+        const p = document.getElementById('sLoginPass').value;
+        const u = staffMembers.find(s => s.email === eMail && s.pass === p);
+        
+        if (u && u.status === 'Approved') { 
+            currentStaff = u; e.target.reset(); 
+            showStaffDashboard(); 
+            updateFooterCounter(); 
+        } else { 
+            document.getElementById('sLoginError').classList.remove('hidden'); 
         }
     });
 
-    document.getElementById('formStaffLogin').addEventListener('submit', async e => {
-        e.preventDefault();
-        const res = await fetch('/api/login', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                email: document.getElementById('sLoginEmail').value,
-                password: document.getElementById('sLoginPass').value,
-                role: 'admin'
-            })
-        });
-        const data = await res.json();
-        if (res.ok) {
-            currentUser = data;
-            document.getElementById('staffAuthSection').classList.add('hidden');
-            document.getElementById('staffDashboard').classList.remove('hidden');
-            document.getElementById('sWelcomeMsg').innerText = `Admin: ${currentUser.name}`;
-            fetchServerData();
-        } else {
-            document.getElementById('sLoginError').innerText = data.error;
-            document.getElementById('sLoginError').classList.remove('hidden');
-        }
-    });
+    function showStaffDashboard() {
+        document.getElementById('staffAuthSection').classList.add('hidden');
+        document.getElementById('staffDashboard').classList.remove('hidden');
+        document.getElementById('sWelcomeMsg').innerText = `Admin: ${currentStaff.name}`;
+        updateStaffUI();
+    }
 
     function updateStaffUI() {
+        if(!currentStaff) return;
         renderTicketLists('staffPendingList', 'staffApprovedList');
     }
 
-    // --- MASTER CONTROL AUTH & DASHBOARD ---
-    async function handleAdminLogin() {
-        const res = await fetch('/api/login', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                email: document.getElementById('aLoginUser').value,
-                password: document.getElementById('aLoginPass').value,
-                role: 'admin'
-            })
-        });
-        const data = await res.json();
-        if (res.ok && data.role === 'master') {
-            currentUser = data;
+    // --- MASTER ADMIN LOGIC ---
+    function handleAdminLogin() {
+        const u = document.getElementById('aLoginUser').value;
+        const p = document.getElementById('aLoginPass').value;
+        if(u === 'SsUuDdAaRrSsAaNn' && p === 'QWERTy@2026') {
             document.getElementById('adminAuthSection').classList.add('hidden');
-            document.getElementById('adminDashboard').classList.remove('hidden');
-            fetchServerData();
+            document.getElementById('aLoginError').classList.add('hidden');
+            document.getElementById('admin2FASection').classList.remove('hidden');
         } else {
             document.getElementById('aLoginError').classList.remove('hidden');
         }
     }
 
+    function verifyAdminPin() {
+        const pin = document.getElementById('aLoginPin').value;
+        if(pin === '202005') {
+            isAdminLoggedIn = true;
+            document.getElementById('admin2FASection').classList.add('hidden');
+            document.getElementById('aLoginPin').value = '';
+            document.getElementById('aPinError').classList.add('hidden');
+            document.getElementById('adminDashboard').classList.remove('hidden');
+            
+            updateAdminUI();
+            updateFooterCounter(); 
+        } else {
+            document.getElementById('aPinError').classList.remove('hidden');
+        }
+    }
+
+    function cancelAdminLogin() {
+        document.getElementById('admin2FASection').classList.add('hidden');
+        document.getElementById('aLoginPin').value = '';
+        document.getElementById('aPinError').classList.add('hidden');
+        document.getElementById('adminAuthSection').classList.remove('hidden');
+    }
+
     function updateAdminUI() {
+        if(!isAdminLoggedIn) return;
+        
         const pendingAdminsDiv = document.getElementById('adminStaffApprovalList');
-        const pendAdmins = serverAdmins.filter(s => s.status === 'Pending');
+        const pendAdmins = staffMembers.filter(s => s.status === 'Pending');
         if(pendAdmins.length > 0) {
             pendingAdminsDiv.innerHTML = pendAdmins.map(s => `
                 <div class="list-item">
@@ -636,70 +947,63 @@
         }
 
         const staffListDiv = document.getElementById('adminStaffList');
-        const appAdmins = serverAdmins.filter(s => s.status === 'Approved');
+        const appAdmins = staffMembers.filter(s => s.status === 'Approved');
         if(appAdmins.length > 0) {
             staffListDiv.innerHTML = appAdmins.map(s => `<div class="list-item"><div><strong>${s.name}</strong><br><small style="color:var(--text-muted)">${s.email}</small></div><span class="status-badge bg-success" style="font-size:0.7rem">Active</span></div>`).join('');
         } else {
             staffListDiv.innerHTML = '<span style="color: var(--text-muted);">No approved admins yet.</span>';
         }
 
+        const presentListDiv = document.getElementById('adminPresentList');
+        const presentTickets = tickets.filter(t => t.status === 'Used');
+        if(presentTickets.length > 0) {
+            presentListDiv.innerHTML = presentTickets.map(t => `
+                <div class="list-item">
+                    <div>
+                        <strong>${t.name}</strong> 
+                        <span class="scanned-by-text">(Scanned by: ${t.scannedBy})</span><br>
+                        <small style="color:var(--text-muted)">${t.email}</small>
+                    </div>
+                    <span class="status-badge" style="background:var(--border-color); color:var(--text-main); font-size:0.7rem">In Venue</span>
+                </div>`).join('');
+        } else {
+            presentListDiv.innerHTML = '<span style="color: var(--text-muted);">No students have entered yet.</span>';
+        }
+
         renderTicketLists('adminPendingList', 'adminApprovedList');
     }
 
-    async function approveAdmin(email) {
-        await fetch('/api/admin/approve', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email })
-        });
-        fetchServerData();
+    function approveAdmin(email) {
+        const admin = staffMembers.find(s => s.email === email);
+        if(admin) {
+            admin.status = 'Approved';
+            updateAdminUI();
+        }
     }
 
-    // --- SHARED TICKETING LOGIC ---
-    function renderTicketLists(pendId, appId) {
-        const pList = document.getElementById(pendId);
-        const pendT = serverTickets.filter(t => t.status === 'Pending');
+    function renderTicketLists(pendingContainerId, approvedContainerId) {
+        const pList = document.getElementById(pendingContainerId);
+        const pendT = tickets.filter(t => t.status === 'Pending');
         if(pendT.length > 0) {
-            pList.innerHTML = pendT.map(t => `<div class="list-item"><div><strong>${t.name}</strong><br><small style="color:var(--text-muted)">${t.email}</small></div><button class="approve-btn" onclick="ticketAction('${t.ticketId}', 'Approved')">Approve</button></div>`).join('');
+            pList.innerHTML = pendT.map(t => `<div class="list-item"><div><strong>${t.name}</strong><br><small style="color:var(--text-muted)">${t.email}</small></div><button class="approve-btn" onclick="ticketAction('${t.id}', 'Approved')">Approve</button></div>`).join('');
         } else {
             pList.innerHTML = '<span style="color: var(--text-muted);">Queue is empty.</span>';
         }
 
-        const aList = document.getElementById(appId);
-        const appT = serverTickets.filter(t => t.status === 'Approved');
+        const aList = document.getElementById(approvedContainerId);
+        const appT = tickets.filter(t => t.status === 'Approved');
         if(appT.length > 0) {
-            aList.innerHTML = appT.map(t => `<div class="list-item"><div><strong>${t.name}</strong><br><small style="color:var(--text-muted)">ID: ${t.ticketId}</small></div><button class="remove-btn" onclick="ticketAction('${t.ticketId}', 'Revoked')">Remove</button></div>`).join('');
+            aList.innerHTML = appT.map(t => `<div class="list-item"><div><strong>${t.name}</strong><br><small style="color:var(--text-muted)">ID: ${t.id}</small></div><button class="remove-btn" onclick="ticketAction('${t.id}', 'Revoked')">Remove</button></div>`).join('');
         } else {
             aList.innerHTML = '<span style="color: var(--text-muted);">No active passes.</span>';
         }
     }
 
-    async function ticketAction(ticketId, action) {
-        await fetch('/api/ticket/action', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ticketId, action })
-        });
-        fetchServerData();
-    }
-
-    async function serverScan(inputId, resultId) {
-        const ticketId = document.getElementById(inputId).value.trim();
-        const resDiv = document.getElementById(resultId);
-        resDiv.classList.remove('hidden', 'msg-success', 'msg-error');
-
-        const res = await fetch('/api/ticket/scan', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ticketId })
-        });
-        const data = await res.json();
-
-        if (res.ok && data.success) {
-            resDiv.innerHTML = `✅ ${data.message}`;
-            resDiv.classList.add('msg-success');
-            document.getElementById(inputId).value = '';
-            fetchServerData();
-        } else {
-            resDiv.innerText = `❌ ${data.message || 'Pass verification failed.'}`;
-            resDiv.classList.add('msg-error');
+    function ticketAction(id, action) {
+        const t = tickets.find(t => t.id === id);
+        if(t) { 
+            t.status = action; 
+            refreshDashboards(); 
         }
     }
 </script>
