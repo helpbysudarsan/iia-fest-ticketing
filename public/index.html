@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>IIA Fest Ticketing</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+    <style>
+        /* Light Theme Variables */
+        :root {
+            --bg-color: #f3f4f6;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --visitor-color: #0ea5e9; /* Blue */
+            --staff-color: #10b981;   /* Green */
+            --admin-color: #8b5cf6;   /* Purple */
+            --success: #10b981;
+            --danger: #ef4444;
+            --border-color: #e5e7eb;
+            --input-bg: #f9fafb;
+            --input-border: #d1d5db;
+        }
+
+        /* Dark Theme Variables (Neon) */
+        body.dark-mode {
+            --bg-color: #0a0f1a; 
+            --card-bg: rgba(17, 24, 39, 0.85);
+            --text-main: #f9fafb;
+            --text-muted: #9ca3af;
+            --border-color: #374151;
+            --input-bg: #1f2937;
+            --input-border: #4b5563;
+        }
+
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            background-color: var(--bg-color); margin: 0; padding: 15px; 
+            display: flex; justify-content: center; align-items: flex-start; padding-top: 10vh;
+            min-height: 100vh; color: var(--text-main); transition: background-color 0.4s, color 0.4s; position: relative;
+        }
+
+        /* === ALPANA BACKGROUNDS === */
+        body::before {
+            content: ""; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: -1;
+            background-image: url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%239ca3af' stroke-width='1.5' stroke-opacity='0.4'%3E%3Ccircle cx='60' cy='60' r='50'/%3E%3Ccircle cx='60' cy='60' r='40' stroke-dasharray='4 4'/%3E%3Cpath d='M60 10 C 75 35, 85 45, 60 60 C 35 45, 45 35, 60 10 Z' fill='%239ca3af' fill-opacity='0.1'/%3E%3Cpath d='M60 110 C 75 85, 85 75, 60 60 C 35 75, 45 85, 60 110 Z' fill='%239ca3af' fill-opacity='0.1'/%3E%3Cpath d='M10 60 C 35 75, 45 85, 60 60 C 45 35, 35 45, 10 60 Z' fill='%239ca3af' fill-opacity='0.1'/%3E%3Cpath d='M110 60 C 85 75, 75 85, 60 60 C 75 35, 85 45, 110 60 Z' fill='%239ca3af' fill-opacity='0.1'/%3E%3Ccircle cx='60' cy='60' r='12'/%3E%3C/g%3E%3C/svg%3E");
+            background-size: 120px 120px; opacity: 0.6; transition: all 0.4s ease-in-out;
+        }
+
+        body.dark-mode::before {
+            background-image: url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeGaussianBlur stdDeviation='2.5' result='b'/%3E%3CfeMerge%3E%3CfeMergeNode in='b'/%3E%3CfeMergeNode in='SourceGraphic'/%3E%3C/feMerge%3E%3C/filter%3E%3Cg filter='url(%23g)' fill='none' stroke='%2300ffff' stroke-width='1.5' stroke-opacity='0.9'%3E%3Ccircle cx='60' cy='60' r='50'/%3E%3Ccircle cx='60' cy='60' r='40' stroke-dasharray='4 4'/%3E%3Cpath d='M60 10 C 75 35, 85 45, 60 60 C 35 45, 45 35, 60 10 Z' fill='%2300ffff' fill-opacity='0.15'/%3E%3Cpath d='M60 110 C 75 85, 85 75, 60 60 C 35 75, 45 85, 60 110 Z' fill='%2300ffff' fill-opacity='0.15'/%3E%3Cpath d='M10 60 C 35 75, 45 85, 60 60 C 45 35, 35 45, 10 60 Z' fill='%2300ffff' fill-opacity='0.15'/%3E%3Cpath d='M110 60 C 85 75, 75 85, 60 60 C 75 35, 85 45, 110 60 Z' fill='%2300ffff' fill-opacity='0.15'/%3E%3Ccircle cx='60' cy='60' r='12'/%3E%3C/g%3E%3C/svg%3E");
+            opacity: 0.65;
+        }
+        
+        .container { width: 100%; max-width: 600px; padding: 20px 0; position: relative; z-index: 1;}
+        .view-section { display: none; animation: slideIn 0.3s ease-out; }
+        .view-section.active { display: block; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* FIXED ICONS IN SCREEN CORNERS */
+        .icon-btn {
+            position: fixed; top: 20px; background: var(--card-bg); border: 1px solid var(--border-color);
+            color: var(--text-main); border-radius: 50%; width: 45px; height: 45px; font-size: 1.2rem; cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center;
+            padding: 0; transition: all 0.2s; backdrop-filter: blur(5px); z-index: 100;
+        }
+        .icon-btn:hover { transform: scale(1.1); }
+        .admin-toggle { left: 20px; }
+        .theme-toggle { right: 20px; }
+        
+        body.dark-mode .theme-toggle { border-color: #00ffff; box-shadow: 0 0 10px rgba(0, 255, 255, 0.4); }
+        body.dark-mode .admin-toggle { border-color: var(--admin-color); box-shadow: 0 0 10px rgba(183, 0, 255, 0.4); }
+
+        h1, h2, h3, h4 { margin-top: 0; color: var(--text-main); }
+        
+        /* === TYPOGRAPHY & FULL NEON GLOW === */
+        .pre-title { 
+            text-align: center; color: var(--text-muted); font-size: 0.85rem; 
+            margin-bottom: 5px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; transition: all 0.3s;
+        }
+        .app-title { 
+            text-align: center; font-size: 3.5rem; font-weight: 900; margin-bottom: 5px; 
+            line-height: 1; text-transform: uppercase; letter-spacing: 2px;
+            background: linear-gradient(45deg, #1f2937, #0ea5e9);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; transition: all 0.3s;
+        }
+        .app-subtitle { 
+            text-align: center; color: var(--visitor-color); font-size: 1.2rem; 
+            margin-bottom: 30px; font-weight: 600; font-style: italic; transition: all 0.3s;
+        }
+
+        body.dark-mode .pre-title { color: #f3f4f6; text-shadow: 0 0 5px rgba(255,255,255,0.5), 0 0 15px rgba(0, 255, 255, 0.3); }
+        body.dark-mode .app-title { 
+            background: none; -webkit-text-fill-color: #ffffff; color: #ffffff; 
+            text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 40px #0ea5e9, 0 0 80px #0ea5e9; 
+        }
+        body.dark-mode .app-subtitle { color: #a5f3fc; text-shadow: 0 0 8px #00ffff, 0 0 15px #00ffff; }
+
+        /* === PASSWORD CONTAINER STYLING === */
+        .password-container { position: relative; width: 100%; }
+        .password-container input { width: 100%; padding-right: 45px; }
+        .eye-btn {
+            position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+            background: none; border: none; cursor: pointer; font-size: 1.1rem; color: var(--text-muted); padding: 0; width: auto;
+        }
+
+        /* === CHOICE CARDS & HOVER EFFECTS === */
+        .home-grid { display: flex; flex-direction: column; gap: 15px; }
+        .choice-card { 
+            background: var(--card-bg); padding: 25px 20px; text-align: center; 
+            border-radius: 16px; cursor: pointer; box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08); 
+            transition: transform 0.2s, background-color 0.3s, border-color 0.3s, box-shadow 0.3s; backdrop-filter: blur(15px);
+        }
+        .choice-card h2 { font-size: 1.4rem; margin-bottom: 5px; transition: text-shadow 0.3s, color 0.3s; }
+        .choice-card p { margin: 0; color: var(--text-muted); font-size: 0.9rem; }
+        .choice-card:active { transform: scale(0.98); }
+        
+        .choice-card.visitor { border-left: 6px solid var(--visitor-color); }
+        .choice-card.staff { border-left: 6px solid var(--staff-color); }
+        
+        body.dark-mode .choice-card { border: 1px solid rgba(255, 255, 255, 0.1); }
+        body.dark-mode .choice-card.visitor { border-left: 6px solid #00ffff; box-shadow: -4px 0 15px rgba(0, 255, 255, 0.2); }
+        body.dark-mode .choice-card.staff { border-left: 6px solid #00ff88; box-shadow: -4px 0 15px rgba(0, 255, 136, 0.2); }
+        
+        body.dark-mode .choice-card.visitor:hover h2 {
+            color: #ffffff !important; text-shadow: 0 0 12px #00ffff, 0 0 25px #00ffff, 0 0 40px #0ea5e9 !important;
+        }
+        body.dark-mode .choice-card.staff:hover h2 {
+            color: #ffffff !important; text-shadow: 0 0 12px #00ff88, 0 0 25px #00ff88, 0 0 40px #10b981 !important;
+        }
+
+        /* Panels */
+        .panel { 
+            background: var(--card-bg); padding: 25px 20px; border-radius: 16px; 
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); margin-bottom: 20px; 
+            transition: background-color 0.3s; backdrop-filter: blur(15px);
+        }
+        body.dark-mode .panel { border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 10px 30px rgba(0, 255, 255, 0.05); }
+
+        .panel-header { 
+            display: flex; justify-content: space-between; align-items: center; 
+            border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 20px;
+        }
+        .panel-header h2 { font-size: 1.3rem; margin: 0; }
+        
+        body.dark-mode h2.neon-visitor { color: #00ffff !important; text-shadow: 0 0 8px rgba(0, 255, 255, 0.5); }
+        body.dark-mode h2.neon-staff { color: #00ff88 !important; text-shadow: 0 0 8px rgba(0, 255, 136, 0.5); }
+        body.dark-mode h2.neon-admin { color: #b700ff !important; text-shadow: 0 0 8px rgba(183, 0, 255, 0.5); }
+
+        /* Inputs & Buttons */
+        input { 
+            width: 100%; padding: 12px; margin: 8px 0 16px 0; border: 1px solid var(--input-border); border-radius: 10px; 
+            box-sizing: border-box; font-size: 1rem; background-color: var(--input-bg); color: var(--text-main);
+        }
+        input:focus { outline: none; border-color: var(--visitor-color); background-color: var(--card-bg); }
+        
+        button { 
+            color: white; border: none; padding: 12px 20px; border-radius: 10px; 
+            cursor: pointer; font-weight: bold; width: 100%; font-size: 1rem; transition: background-color 0.2s;
+        }
+        .btn-visitor { background-color: var(--visitor-color); }
+        .btn-staff { background-color: var(--staff-color); }
+        .btn-admin { background-color: var(--admin-color); }
+        
+        body.dark-mode .btn-visitor { background-color: #0088aa; border: 1px solid #00ffff; box-shadow: 0 0 10px rgba(0, 255, 255, 0.4); }
+        body.dark-mode .btn-staff { background-color: #008844; border: 1px solid #00ff88; box-shadow: 0 0 10px rgba(0, 255, 136, 0.4); }
+        body.dark-mode .btn-admin { background-color: #660099; border: 1px solid #b700ff; box-shadow: 0 0 10px rgba(183, 0, 255, 0.4); }
+        
+        .scan-btn { background-color: #374151; margin-top: 10px; }
+        body.dark-mode .scan-btn { background-color: #1f2937; border: 1px solid #4b5563; }
+        .back-btn { background: var(--border-color); color: var(--text-main); width: auto; padding: 6px 10px; font-size: 0.85rem; border-radius: 8px; }
+        
+        .approve-btn { background: var(--success); width: auto; padding: 6px 12px; font-size: 0.85rem; }
+        body.dark-mode .approve-btn { background: #047857; border: 1px solid #10b981; }
+        .remove-btn { background: var(--danger); width: auto; padding: 6px 12px; font-size: 0.85rem; }
+        body.dark-mode .remove-btn { background: #991b1b; border: 1px solid #ef4444; }
+        .logout-btn { background: var(--danger); width: auto; padding: 5px 10px; font-size: 0.8rem; margin-top: 10px;}
+
+        .auth-toggle { text-align: center; margin-top: 15px; font-size: 0.9rem; color: var(--text-muted); }
+        .auth-toggle span { font-weight: bold; cursor: pointer; text-decoration: underline; }
+        .toggle-visitor { color: var(--visitor-color); }
+        .toggle-staff { color: var(--staff-color); }
+        body.dark-mode .toggle-visitor { color: #00ffff; }
+        body.dark-mode .toggle-staff { color: #00ff88; }
+
+        /* Badges & Scanner */
+        .status-badge { display: inline-block; padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; }
+        .bg-pending { background: #fef3c7; color: #d97706; }
+        .bg-success { background: #d1fae5; color: #047857; }
+        .bg-danger { background: var(--danger); color: white; }
+        
+        body.dark-mode .bg-pending { background: rgba(217, 119, 6, 0.2); color: #fcd34d; border: 1px solid #fbbf24; }
+        body.dark-mode .bg-success { background: rgba(4, 120, 87, 0.2); color: #34d399; border: 1px solid #10b981; }
+        body.dark-mode .bg-danger { background: rgba(153, 27, 27, 0.4); color: #fca5a5; border: 1px solid #ef4444; }
+
+        .scanner-box { background: #111827; color: white; padding: 20px; border-radius: 16px; margin-top: 20px; border: 1px solid var(--border-color); }
+        .camera-view { border: 2px dashed #4b5563; padding: 20px 10px; text-align: center; border-radius: 10px; background: #000; margin-bottom: 10px;}
+        
+        .status-msg { margin-top: 15px; font-weight: bold; padding: 12px; border-radius: 8px; text-align: center; font-size: 0.9rem;}
+        .msg-success { background: #d1fae5; color: #065f46; border: 1px solid #34d399; }
+        .msg-error { background: #fee2e2; color: #b91c1c; border: 1px solid #f87171; }
+        .hidden { display: none !important; }
+        
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 5px; border-bottom: 1px solid var(--border-color); }
+        .list-item:last-child { border-bottom: none; }
+        .section-box { background: var(--input-bg); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 20px; }
+        body.dark-mode .section-box { border-color: rgba(255, 255, 255, 0.05); }
+    </style>
+</head>
+<body>
+
+<!-- SECRET ADMIN ICON (Top Left) -->
+<button class="icon-btn admin-toggle" onclick="switchView('view-admin')" title="Master Control Dashboard">🛡️</button>
+<!-- THEME ICON (Top Right) -->
+<button id="themeToggle" class="icon-btn theme-toggle" onclick="toggleTheme()" title="Toggle Day/Night Mode">🌙</button>
+
+<div class="container">
+
+    <!-- === HOME SCREEN === -->
+    <div id="view-home" class="view-section active">
+        <h4 class="pre-title">Inside Inspiration Academy Presents</h4>
+        <h1 class="app-title">IIA Fest</h1>
+        <p class="app-subtitle">Welcome to Our Best Programme</p>
+        
+        <p style="text-align: center; color: var(--text-muted); margin-bottom: 15px; font-size: 0.9rem;">Select your portal to continue</p>
+        
+        <div class="home-grid">
+            <div class="choice-card visitor" onclick="switchView('view-visitor')">
+                <h2 style="color: var(--visitor-color);">👤 Students</h2>
+                <p>Request and view entry pass</p>
+            </div>
+            <div class="choice-card staff" onclick="switchView('view-staff')">
+                <h2 style="color: var(--staff-color);">📋 Admins</h2>
+                <p>Approve and scan passes</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- === 1. STUDENTS PORTAL === -->
+    <div id="view-visitor" class="view-section">
+        <div class="panel">
+            <div class="panel-header">
+                <h2 class="neon-visitor" style="color: var(--visitor-color);">Student Portal</h2>
+                <button class="back-btn" onclick="switchView('view-home')">Close ✕</button>
+            </div>
+            
+            <div id="visitorAuthSection">
+                <form id="formVisitorLogin">
+                    <h3>Student Login</h3>
+                    <input type="email" id="vLoginEmail" placeholder="Email Address" required>
+                    <div class="password-container">
+                        <input type="password" id="vLoginPass" placeholder="Password" required>
+                        <button type="button" class="eye-btn" onclick="togglePassword('vLoginPass', this)">👁️</button>
+                    </div>
+                    <button type="submit" class="btn-visitor">Log In</button>
+                    <div id="vLoginError" class="status-msg msg-error hidden">Invalid credentials.</div>
+                    <div class="auth-toggle">New student? <span class="toggle-visitor" onclick="toggleAuth('visitor', 'signup')">Sign Up</span></div>
+                </form>
+
+                <form id="formVisitorSignup" class="hidden">
+                    <h3>Student Signup</h3>
+                    <input type="text" id="vSignupName" placeholder="Full Name" required>
+                    <input type="email" id="vSignupEmail" placeholder="Email Address" required>
+                    <div class="password-container">
+                        <input type="password" id="vSignupPass" placeholder="Create Password" required>
+                        <button type="button" class="eye-btn" onclick="togglePassword('vSignupPass', this)">👁️</button>
+                    </div>
+                    <button type="submit" class="btn-visitor">Sign Up</button>
+                    <div id="vSignupError" class="status-msg msg-error hidden">Email already exists.</div>
+                    <div class="auth-toggle">Have an account? <span class="toggle-visitor" onclick="toggleAuth('visitor', 'login')">Log In</span></div>
+                </form>
+            </div>
+
+            <div id="visitorDashboard" class="hidden">
+                <h3 id="vWelcomeMsg"></h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0;">Your event entry pass</p>
+                
+                <button id="btnRequestPass" class="btn-visitor" onclick="requestTicket()">Request Digital Pass</button>
+
+                <div id="userTicketDisplay" class="section-box hidden" style="text-align: center;">
+                    <h3 id="tktName" style="margin: 0 0 5px 0;"></h3>
+                    <span id="tktStatus" class="status-badge bg-pending">Pending Approval</span><br>
+                    <div id="tktQrContainer" style="background: white; padding: 10px; border-radius: 8px; display: inline-block; margin-top: 15px;">
+                        <canvas id="qrCanvas"></canvas>
+                    </div>
+                </div>
+                <button class="logout-btn" onclick="logout('visitor')">Log Out</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- === 2. ADMINS PORTAL === -->
+    <div id="view-staff" class="view-section">
+        <div class="panel">
+            <div class="panel-header">
+                <h2 class="neon-staff" style="color: var(--staff-color);">Admin Portal</h2>
+                <button class="back-btn" onclick="switchView('view-home')">Close ✕</button>
+            </div>
+            
+            <div id="staffAuthSection">
+                <form id="formStaffLogin">
+                    <h3>Admin Login</h3>
+                    <input type="email" id="sLoginEmail" placeholder="Admin Email" required>
+                    <div class="password-container">
+                        <input type="password" id="sLoginPass" placeholder="Password" required>
+                        <button type="button" class="eye-btn" onclick="togglePassword('sLoginPass', this)">👁️</button>
+                    </div>
+                    <button type="submit" class="btn-staff">Log In</button>
+                    <div id="sLoginError" class="status-msg msg-error hidden">Invalid credentials or awaiting Master Approval.</div>
+                    <div class="auth-toggle">New admin? <span class="toggle-staff" onclick="toggleAuth('staff', 'signup')">Register Here</span></div>
+                </form>
+
+                <form id="formStaffSignup" class="hidden">
+                    <h3>Admin Registration</h3>
+                    <input type="text" id="sSignupName" placeholder="Full Name" required>
+                    <input type="email" id="sSignupEmail" placeholder="Admin Email" required>
+                    <div class="password-container">
+                        <input type="password" id="sSignupPass" placeholder="Create Password" required>
+                        <button type="button" class="eye-btn" onclick="togglePassword('sSignupPass', this)">👁️</button>
+                    </div>
+                    <button type="submit" class="btn-staff">Register for Approval</button>
+                    <div id="sSignupError" class="status-msg msg-error hidden">Email already registered.</div>
+                    <div class="auth-toggle">Registered? <span class="toggle-staff" onclick="toggleAuth('staff', 'login')">Log In</span></div>
+                </form>
+            </div>
+
+            <div id="staffDashboard" class="hidden">
+                <h3 id="sWelcomeMsg" style="margin-top:0;"></h3>
+                
+                <div class="section-box">
+                    <h3 style="font-size: 1rem; margin: 0 0 10px 0;">Pending Student Approvals</h3>
+                    <div id="staffPendingList" style="font-size: 0.95rem;"></div>
+                </div>
+
+                <div class="section-box">
+                    <h3 style="font-size: 1rem; margin: 0 0 10px 0;">Active Student Passes</h3>
+                    <div id="staffApprovedList" style="font-size: 0.95rem;"></div>
+                </div>
+                
+                <div class="scanner-box">
+                    <h3 style="margin-top:0; font-size: 1.1rem; color: white;">📱 Door Scanner</h3>
+                    <div class="camera-view"><span style="font-size: 2rem;">📷</span><br><span style="font-size: 0.85rem; color: #9ca3af;">Camera Ready</span></div>
+                    <input type="text" id="staffScannerInput" placeholder="Enter Ticket ID..." style="background: white; color: black; border:none;">
+                    <button class="scan-btn" onclick="serverScan('staffScannerInput', 'staffScanResult')">Scan Pass</button>
+                    <div id="staffScanResult" class="status-msg hidden"></div>
+                </div>
+                <button class="logout-btn" onclick="logout('staff')">Log Out</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- === 3. MASTER CONTROL PORTAL === -->
+    <div id="view-admin" class="view-section">
+        <div class="panel" style="border: 2px solid var(--admin-color);">
+            <div class="panel-header">
+                <h2 class="neon-admin" style="color: var(--admin-color);">Master Control</h2>
+                <button class="back-btn" onclick="switchView('view-home')">Close ✕</button>
+            </div>
+            
+            <div id="adminAuthSection">
+                <h3>Master Secure Login</h3>
+                <input type="text" id="aLoginUser" placeholder="Master Username" autocomplete="off">
+                <div class="password-container">
+                    <input type="password" id="aLoginPass" placeholder="Master Password">
+                    <button type="button" class="eye-btn" onclick="togglePassword('aLoginPass', this)">👁️</button>
+                </div>
+                <button class="btn-admin" onclick="handleAdminLogin()">Access Master Control</button>
+                <div id="aLoginError" class="status-msg msg-error hidden">Access Denied</div>
+            </div>
+
+            <div id="adminDashboard" class="hidden">
+                <h3 style="margin-top:0;">Master Dashboard</h3>
+                
+                <div class="section-box" style="border-left: 4px solid var(--admin-color);">
+                    <h3 style="font-size: 1rem; margin: 0 0 10px 0;">🛡️ Pending Admin Approvals</h3>
+                    <div id="adminStaffApprovalList" style="font-size: 0.95rem;"></div>
+                </div>
+
+                <div class="section-box">
+                    <h3 style="font-size: 1rem; margin: 0 0 10px 0;">👥 Approved Admins</h3>
+                    <div id="adminStaffList" style="font-size: 0.95rem;"></div>
+                </div>
+
+                <div class="section-box">
+                    <h3 style="font-size: 1rem; margin: 0 0 10px 0;">Pending Student Authorizations</h3>
+                    <div id="adminPendingList" style="font-size: 0.95rem;"></div>
+                </div>
+
+                <div class="section-box">
+                    <h3 style="font-size: 1rem; margin: 0 0 10px 0;">All Active Student Passes</h3>
+                    <div id="adminApprovedList" style="font-size: 0.95rem;"></div>
+                </div>
+                
+                <div class="scanner-box">
+                    <h3 style="margin-top:0; font-size: 1.1rem; color: white;">📱 Master Override Scanner</h3>
+                    <input type="text" id="adminScannerInput" placeholder="Enter Ticket ID..." style="background: white; color: black; border:none;">
+                    <button class="scan-btn" onclick="serverScan('adminScannerInput', 'adminScanResult')">Override Scan</button>
+                    <div id="adminScanResult" class="status-msg hidden"></div>
+                </div>
+                <button class="logout-btn" onclick="logout('admin')">Lock Dashboard</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    function togglePassword(fieldId, btn) {
+        const input = document.getElementById(fieldId);
+        if (input.type === "password") {
+            input.type = "text"; btn.innerText = "🙈"; 
+        } else {
+            input.type = "password"; btn.innerText = "👁️"; 
+        }
+    }
+
+    function toggleTheme() {
+        const body = document.body;
+        const btn = document.getElementById('themeToggle');
+        body.classList.toggle('dark-mode');
+        btn.innerText = body.classList.contains('dark-mode') ? '☀️' : '🌙';
+    }
+
+    function switchView(viewId) {
+        document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+        document.getElementById(viewId).classList.add('active');
+        fetchServerData();
+    }
+
+    let currentUser = null; // Stores logged-in student or admin info
+    let serverTickets = [];
+    let serverAdmins = [];
+
+    function toggleAuth(role, type) {
+        document.querySelectorAll('.status-msg').forEach(el => el.classList.add('hidden'));
+        if (type === 'signup') {
+            document.getElementById(`form${role.charAt(0).toUpperCase() + role.slice(1)}Login`).classList.add('hidden');
+            document.getElementById(`form${role.charAt(0).toUpperCase() + role.slice(1)}Signup`).classList.remove('hidden');
+        } else {
+            document.getElementById(`form${role.charAt(0).toUpperCase() + role.slice(1)}Signup`).classList.add('hidden');
+            document.getElementById(`form${role.charAt(0).toUpperCase() + role.slice(1)}Login`).classList.remove('hidden');
+        }
+    }
+
+    function logout(role) {
+        currentUser = null;
+        if(role === 'visitor') {
+            document.getElementById('visitorDashboard').classList.add('hidden');
+            document.getElementById('visitorAuthSection').classList.remove('hidden');
+            toggleAuth('visitor', 'login');
+        } else if (role === 'staff') {
+            document.getElementById('staffDashboard').classList.add('hidden');
+            document.getElementById('staffAuthSection').classList.remove('hidden');
+            toggleAuth('staff', 'login');
+        } else if (role === 'admin') {
+            document.getElementById('adminDashboard').classList.add('hidden');
+            document.getElementById('adminAuthSection').classList.remove('hidden');
+        }
+    }
+
+    // --- FETCH DATA FROM SERVER ---
+    async function fetchServerData() {
+        try {
+            const res = await fetch('/api/data');
+            const data = await res.json();
+            serverTickets = data.tickets || [];
+            serverAdmins = data.users || [];
+            updateUIs();
+        } catch (err) {
+            console.error("Failed to sync with server:", err);
+        }
+    }
+
+    function updateUIs() {
+        if (currentUser && currentUser.role === 'student') updateStudentUI();
+        if (currentUser && currentUser.role === 'admin') updateStaffUI();
+        if (currentUser && currentUser.role === 'master') updateAdminUI();
+    }
+
+    // --- STUDENT AUTH & TICKET REQUEST ---
+    document.getElementById('formVisitorSignup').addEventListener('submit', async e => {
+        e.preventDefault();
+        const res = await fetch('/api/register', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name: document.getElementById('vSignupName').value,
+                email: document.getElementById('vSignupEmail').value,
+                password: document.getElementById('vSignupPass').value,
+                role: 'student'
+            })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            alert('Signup successful! Please log in.');
+            toggleAuth('visitor', 'login');
+        } else {
+            document.getElementById('vSignupError').innerText = data.error;
+            document.getElementById('vSignupError').classList.remove('hidden');
+        }
+    });
+
+    document.getElementById('formVisitorLogin').addEventListener('submit', async e => {
+        e.preventDefault();
+        const res = await fetch('/api/login', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                email: document.getElementById('vLoginEmail').value,
+                password: document.getElementById('vLoginPass').value,
+                role: 'student'
+            })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            currentUser = data;
+            document.getElementById('visitorAuthSection').classList.add('hidden');
+            document.getElementById('visitorDashboard').classList.remove('hidden');
+            document.getElementById('vWelcomeMsg').innerText = `Welcome, ${currentUser.name}!`;
+            fetchServerData();
+        } else {
+            document.getElementById('vLoginError').innerText = data.error;
+            document.getElementById('vLoginError').classList.remove('hidden');
+        }
+    });
+
+    async function requestTicket() {
+        const res = await fetch('/api/ticket/request', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: currentUser.email, name: currentUser.name })
+        });
+        fetchServerData();
+    }
+
+    function updateStudentUI() {
+        const tkt = serverTickets.find(t => t.email === currentUser.email);
+        const btn = document.getElementById('btnRequestPass');
+        const disp = document.getElementById('userTicketDisplay');
+        const badge = document.getElementById('tktStatus');
+        const qrBox = document.getElementById('tktQrContainer');
+
+        if (!tkt) {
+            btn.classList.remove('hidden'); disp.classList.add('hidden');
+        } else {
+            btn.classList.add('hidden'); disp.classList.remove('hidden');
+            document.getElementById('tktName').innerText = tkt.name;
+
+            if (tkt.status === 'Pending') {
+                badge.innerText = 'Pending Approval'; badge.className = 'status-badge bg-pending'; qrBox.classList.add('hidden');
+            } else if (tkt.status === 'Approved') {
+                badge.innerText = 'Pass Authorized'; badge.className = 'status-badge bg-success'; qrBox.classList.remove('hidden');
+                new QRious({ element: document.getElementById('qrCanvas'), value: tkt.ticketId, size: 160, level: 'H' });
+            } else if (tkt.status === 'Used') {
+                badge.innerText = 'Pass Used (Verified)'; badge.className = 'status-badge'; badge.style.background = 'var(--border-color)'; badge.style.color = 'var(--text-main)'; qrBox.classList.remove('hidden'); 
+            } else if (tkt.status === 'Revoked') {
+                badge.innerText = 'Pass Revoked'; badge.className = 'status-badge bg-danger'; qrBox.classList.add('hidden');
+            }
+        }
+    }
+
+    // --- ADMIN AUTH & DASHBOARD ---
+    document.getElementById('formStaffSignup').addEventListener('submit', async e => {
+        e.preventDefault();
+        const res = await fetch('/api/register', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name: document.getElementById('sSignupName').value,
+                email: document.getElementById('sSignupEmail').value,
+                password: document.getElementById('sSignupPass').value,
+                role: 'admin'
+            })
+        });
+        if (res.ok) {
+            alert('Admin registration submitted! Awaiting Master Admin approval.');
+            toggleAuth('staff', 'login');
+        }
+    });
+
+    document.getElementById('formStaffLogin').addEventListener('submit', async e => {
+        e.preventDefault();
+        const res = await fetch('/api/login', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                email: document.getElementById('sLoginEmail').value,
+                password: document.getElementById('sLoginPass').value,
+                role: 'admin'
+            })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            currentUser = data;
+            document.getElementById('staffAuthSection').classList.add('hidden');
+            document.getElementById('staffDashboard').classList.remove('hidden');
+            document.getElementById('sWelcomeMsg').innerText = `Admin: ${currentUser.name}`;
+            fetchServerData();
+        } else {
+            document.getElementById('sLoginError').innerText = data.error;
+            document.getElementById('sLoginError').classList.remove('hidden');
+        }
+    });
+
+    function updateStaffUI() {
+        renderTicketLists('staffPendingList', 'staffApprovedList');
+    }
+
+    // --- MASTER CONTROL AUTH & DASHBOARD ---
+    async function handleAdminLogin() {
+        const res = await fetch('/api/login', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                email: document.getElementById('aLoginUser').value,
+                password: document.getElementById('aLoginPass').value,
+                role: 'admin'
+            })
+        });
+        const data = await res.json();
+        if (res.ok && data.role === 'master') {
+            currentUser = data;
+            document.getElementById('adminAuthSection').classList.add('hidden');
+            document.getElementById('adminDashboard').classList.remove('hidden');
+            fetchServerData();
+        } else {
+            document.getElementById('aLoginError').classList.remove('hidden');
+        }
+    }
+
+    function updateAdminUI() {
+        const pendingAdminsDiv = document.getElementById('adminStaffApprovalList');
+        const pendAdmins = serverAdmins.filter(s => s.status === 'Pending');
+        if(pendAdmins.length > 0) {
+            pendingAdminsDiv.innerHTML = pendAdmins.map(s => `
+                <div class="list-item">
+                    <div><strong>${s.name}</strong><br><small style="color:var(--text-muted)">${s.email}</small></div>
+                    <button class="approve-btn" onclick="approveAdmin('${s.email}')">Approve Admin</button>
+                </div>`).join('');
+        } else {
+            pendingAdminsDiv.innerHTML = '<span style="color: var(--text-muted);">No pending admin registrations.</span>';
+        }
+
+        const staffListDiv = document.getElementById('adminStaffList');
+        const appAdmins = serverAdmins.filter(s => s.status === 'Approved');
+        if(appAdmins.length > 0) {
+            staffListDiv.innerHTML = appAdmins.map(s => `<div class="list-item"><div><strong>${s.name}</strong><br><small style="color:var(--text-muted)">${s.email}</small></div><span class="status-badge bg-success" style="font-size:0.7rem">Active</span></div>`).join('');
+        } else {
+            staffListDiv.innerHTML = '<span style="color: var(--text-muted);">No approved admins yet.</span>';
+        }
+
+        renderTicketLists('adminPendingList', 'adminApprovedList');
+    }
+
+    async function approveAdmin(email) {
+        await fetch('/api/admin/approve', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+        fetchServerData();
+    }
+
+    // --- SHARED TICKETING LOGIC ---
+    function renderTicketLists(pendId, appId) {
+        const pList = document.getElementById(pendId);
+        const pendT = serverTickets.filter(t => t.status === 'Pending');
+        if(pendT.length > 0) {
+            pList.innerHTML = pendT.map(t => `<div class="list-item"><div><strong>${t.name}</strong><br><small style="color:var(--text-muted)">${t.email}</small></div><button class="approve-btn" onclick="ticketAction('${t.ticketId}', 'Approved')">Approve</button></div>`).join('');
+        } else {
+            pList.innerHTML = '<span style="color: var(--text-muted);">Queue is empty.</span>';
+        }
+
+        const aList = document.getElementById(appId);
+        const appT = serverTickets.filter(t => t.status === 'Approved');
+        if(appT.length > 0) {
+            aList.innerHTML = appT.map(t => `<div class="list-item"><div><strong>${t.name}</strong><br><small style="color:var(--text-muted)">ID: ${t.ticketId}</small></div><button class="remove-btn" onclick="ticketAction('${t.ticketId}', 'Revoked')">Remove</button></div>`).join('');
+        } else {
+            aList.innerHTML = '<span style="color: var(--text-muted);">No active passes.</span>';
+        }
+    }
+
+    async function ticketAction(ticketId, action) {
+        await fetch('/api/ticket/action', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ticketId, action })
+        });
+        fetchServerData();
+    }
+
+    async function serverScan(inputId, resultId) {
+        const ticketId = document.getElementById(inputId).value.trim();
+        const resDiv = document.getElementById(resultId);
+        resDiv.classList.remove('hidden', 'msg-success', 'msg-error');
+
+        const res = await fetch('/api/ticket/scan', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ticketId })
+        });
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+            resDiv.innerHTML = `✅ ${data.message}`;
+            resDiv.classList.add('msg-success');
+            document.getElementById(inputId).value = '';
+            fetchServerData();
+        } else {
+            resDiv.innerText = `❌ ${data.message || 'Pass verification failed.'}`;
+            resDiv.classList.add('msg-error');
+        }
+    }
+</script>
+
+</body>
+</html>
