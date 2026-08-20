@@ -34,7 +34,7 @@ const Ticket = mongoose.model('Ticket', ticketSchema);
 // 3. API Routes for Authentication & Tickets
 
 // Register Student or Admin
-app.api/register = app.post('/api/register', async (req, res) => {
+app.post('/api/register', async (req, res) => {
     try {
         const { name, email, password, role } = req.body;
         const existingUser = await User.findOne({ email });
